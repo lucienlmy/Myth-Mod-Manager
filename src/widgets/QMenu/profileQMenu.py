@@ -15,7 +15,7 @@ class ProfileMenu(ModContextMenu):
     def __init__(self, qParent: ProfileList) -> None:
         super().__init__(qParent)
 
-        self.qParent = qParent
+        self.qParent: ProfileList = qParent
 
         qParent.profileRightclicked.connect(self.profileRightClicked)
         qParent.modRightclicked.connect(self.modRightClicked)
@@ -39,8 +39,13 @@ class ProfileMenu(ModContextMenu):
         self.modRemove.triggered.connect(lambda: self.callFunc(self.qParent.removeMods))
         self.copyModsTo.triggered.connect(lambda: self.callFunc(self.qParent.copyModsToProfileMenu))
 
-        self.profileButtons = (self.profileApply, self.modAdd, self.profileAdd, self.profileRemove, self.profileEdit, self.profileCopy, self.copyModsTo)
-        self.modButtons = (self.profileApply, self.modAdd, self.modRemove, self.copyModsTo)
+        self.profileButtons: tuple = (
+            self.profileApply, self.modAdd, self.profileAdd, self.profileRemove, self.profileEdit,
+            self.profileCopy, self.copyModsTo
+        )
+        self.modButtons: tuple = (
+            self.profileApply, self.modAdd, self.modRemove, self.copyModsTo
+        )
 
         action: qtg.QAction
         for action in self.findChildren(qtg.QAction):

@@ -1,19 +1,17 @@
-from PySide6.QtCore import Qt as qt
-
 from pytestqt.qtbot import QtBot
 
 from src.manager import ModManager
 
 from src.constant_vars import ModType
 
-def test_manager(qtbot: QtBot, createTemp_Mod_ini: str, createTemp_Config_ini: str):
+def test_manager(qtbot: QtBot, createTemp_Mod_ini: str, createTemp_Config_ini: str) -> None:
 
     widget = ModManager(createTemp_Mod_ini, createTemp_Config_ini)
     qtbot.addWidget(widget)
 
-    modsCount = widget.modsTable.getModTypeCount(ModType.mods)
-    overrideCount = widget.modsTable.getModTypeCount(ModType.mods_override)
-    mapsCount = widget.modsTable.getModTypeCount(ModType.maps)
+    modsCount: int | None = widget.modsTable.getModTypeCount(ModType.mods)
+    overrideCount: int | None = widget.modsTable.getModTypeCount(ModType.mods_override)
+    mapsCount: int | None = widget.modsTable.getModTypeCount(ModType.maps)
 
     assert widget.totalModsLabel.text() == f'Total Mods: {widget.modsTable.rowCount()}'
     assert widget.modsLabel.text() == f'Mods: {modsCount}'

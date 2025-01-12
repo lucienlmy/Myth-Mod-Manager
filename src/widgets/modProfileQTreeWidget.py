@@ -71,7 +71,7 @@ class ProfileList(qtw.QTreeWidget):
 
         for i in range(0, profile.childCount() + 1):
 
-            child = profile.child(i)
+            child: qtw.QTreeWidgetItem = profile.child(i)
 
             if child is None:
                 continue
@@ -98,7 +98,7 @@ class ProfileList(qtw.QTreeWidget):
     
     def applyProfileEvent(self) -> None:
 
-        selectedItem = self.__selectedItem()
+        selectedItem: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
         if selectedItem is not None:
 
@@ -110,7 +110,7 @@ class ProfileList(qtw.QTreeWidget):
             
             else:
 
-                profile = self.__getParentOfChild(selectedItem).text(0)
+                profile: str = self.__getParentOfChild(selectedItem).text(0)
 
                 logging.info('Applying mods from %s', profile)
 
@@ -124,9 +124,9 @@ class ProfileList(qtw.QTreeWidget):
 
         for profile in list(self.profileManager.file.keys()):
 
-            profileWidget = self.__findProfile(profile)
+            profileWidget: qtw.QTreeWidgetItem = self.__findProfile(profile)
 
-            modsWidget = self.__getMods(profileWidget)
+            modsWidget: list[qtw.QTreeWidgetItem] | None = self.__getMods(profileWidget)
 
             if not modsWidget:
                 continue
@@ -150,7 +150,7 @@ class ProfileList(qtw.QTreeWidget):
 
             self.addProfile(profile, initalize=True)
 
-            profileWidget = self.__findProfile(profile)
+            profileWidget: qtw.QTreeWidgetItem = self.__findProfile(profile)
 
             profileWidget.setSelected(True)
 
@@ -175,9 +175,10 @@ class ProfileList(qtw.QTreeWidget):
 
     def addMods(self, *mods: str, save: bool = True) -> None:
 
-        selectedItem = self.__selectedItem()
+        selectedItem: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
         # If this function was triggered by selecting a mod, find the profile
+        profile: qtw.QTreeWidgetItem | None
         if not self.isProfile(selectedItem):
             profile = self.__getParentOfChild(selectedItem)
         else:
@@ -185,7 +186,7 @@ class ProfileList(qtw.QTreeWidget):
         
         logging.info('Adding mods: %s into profile: %s', ' ,'.join(mods), profile.text(0))
 
-        profileMods = self.__getMods(profile)
+        profileMods: list[qtw.QTreeWidgetItem] | None = self.__getMods(profile)
 
         if profileMods:
             profileMods = [x.text(0) for x in profileMods]
@@ -214,9 +215,9 @@ class ProfileList(qtw.QTreeWidget):
     
     def removeMods(self) -> None:
 
-        mod = self.__selectedItem()
+        mod: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
-        profile = self.__getParentOfChild(mod)
+        profile: qtw.QTreeWidgetItem = self.__getParentOfChild(mod)
 
         logging.info('Removing mod %s from profile %s', mod.text(0), profile.text(0))
 
@@ -235,9 +236,9 @@ class ProfileList(qtw.QTreeWidget):
     
     def copyModsToProfile(self, modsDestination: str) -> None:
 
-        selectedItem = self.__selectedItem()
+        selectedItem: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
-        copyingTo = self.__findProfile(modsDestination)
+        copyingTo: qtw.QTreeWidgetItem = self.__findProfile(modsDestination)
 
         logging.info('Copying mods to %s', modsDestination)
 
@@ -285,7 +286,7 @@ class ProfileList(qtw.QTreeWidget):
         The initalize parameter is when the program loads from the json file
         '''
 
-        profiles = self.__getProfiles()
+        profiles: list[str] = self.__getProfiles()
 
         for item in items:
 
@@ -305,10 +306,10 @@ class ProfileList(qtw.QTreeWidget):
     def isProfile(self, itemInQuestion: qtw.QTreeWidgetItem) -> bool:
         return itemInQuestion.data(0, ProfileRole.type) == DATA_PROFILE[2]
 
-    def deleteProfile(self):
+    def deleteProfile(self) -> None:
         '''Deletes an existing profile'''
 
-        toBeDeleted = self.__selectedItem()
+        toBeDeleted: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
         logging.info('Deleting profile %s', toBeDeleted.text(0))
 
@@ -348,7 +349,7 @@ class ProfileList(qtw.QTreeWidget):
     def editProfile(self, name: str) -> None:
         '''Changes the name of a profile'''
 
-        profile = self.__selectedItem()
+        profile: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
         logging.info('Editing %s to %s', profile.text(0), name)
 
@@ -358,16 +359,16 @@ class ProfileList(qtw.QTreeWidget):
 
     def copyProfile(self) -> None:
 
-        profileToCopy = self.__selectedItem()
+        profileToCopy: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
-        mods = self.__getMods(profileToCopy)
+        mods: list[qtw.QTreeWidgetItem] | None = self.__getMods(profileToCopy)
 
         if mods is None:
             return
 
         logging.info('Copying %s', profileToCopy.text(0))
 
-        modsToCopy = [x.text(0) for x in mods]
+        modsToCopy: list[str] = [x.text(0) for x in mods]
 
         qDialog = insertString(qapp.translate('ProfileList', 'New profile name:'))
 
@@ -384,7 +385,7 @@ class ProfileList(qtw.QTreeWidget):
 
                     self.addProfile(qDialog.userInput)
 
-                    profileItem = self.__findProfile(qDialog.userInput)
+                    profileItem: qtw.QTreeWidgetItem = self.__findProfile(qDialog.userInput)
 
                     profileItem.setSelected(True)
 
@@ -407,7 +408,7 @@ class ProfileList(qtw.QTreeWidget):
                     msg.exec()
 
     def unselectShortcut(self) -> None:
-        toBeUnselected = self.__selectedItem()
+        toBeUnselected: qtw.QTreeWidgetItem | None = self.__selectedItem()
         if toBeUnselected:
             toBeUnselected.setSelected(False)
 
@@ -419,7 +420,7 @@ class ProfileList(qtw.QTreeWidget):
 
             self.clearSelection()
 
-            selectedItem = self.itemAt(event.pos())
+            selectedItem: qtw.QTreeWidgetItem = self.itemAt(event.pos())
 
             if selectedItem:
 
@@ -444,7 +445,7 @@ class ProfileList(qtw.QTreeWidget):
 
     def keyPressEvent(self, event: qtg.QKeyEvent) -> None:
 
-        selectedItem = self.__selectedItem()
+        selectedItem: qtw.QTreeWidgetItem | None = self.__selectedItem()
 
         if selectedItem is None:
             return

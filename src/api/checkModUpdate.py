@@ -1,5 +1,7 @@
 import logging
 
+from typing import Any
+
 from PySide6.QtCore import QObject, QUrl, Signal, Slot
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 
@@ -23,19 +25,19 @@ class checkModUpdate(QObject):
         logging.getLogger(__file__)
 
         try:
-            self.localVer = Version.coerce(localVer)
+            self.localVer: Version = Version.coerce(localVer)
         except Exception as e:
             logging.error('checkModUpdate.__init__(), An error occured trying to parse mod local version %s:\n%s', localVer, str(e))
             self.error.emit()
             self.deleteLater()
 
-        link = f'https://api.modworkshop.net/mods/{modId}/version'
+        link: str = f'https://api.modworkshop.net/mods/{modId}/version'
 
         network = QNetworkAccessManager(self)
         request = QNetworkRequest(QUrl(link))
         logging.debug('Request for %s from checkModUpdate() started', link)
 
-        self.reply = network.get(request)
+        self.reply: QNetworkReply = network.get(request)
         self.reply.finished.connect(self.__reply_handler)
     
     @Slot()
@@ -52,10 +54,10 @@ class checkModUpdate(QObject):
     def __checkVersion(self) -> None:
         reply: QNetworkReply = self.sender()
 
-        replyDecoded = reply.readAll().data().decode()
+        replyDecoded: str | Any = reply.readAll().data().decode()
 
         try:
-            latestVersion = Version.coerce(replyDecoded)
+            latestVersion: Version = Version.coerce(replyDecoded)
         except Exception as e:
             logging.error('An error occured trying to access a modworkshop.net API reply in checkModUpdate().__checkversion():\n%s', str(e))
             self.error.emit()

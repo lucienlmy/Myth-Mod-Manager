@@ -21,7 +21,7 @@ class TagDisplay(qtw.QTableWidget):
 
         self.setSelectionBehavior(qtw.QAbstractItemView.SelectionBehavior.SelectRows)
 
-        horizontalHeader = self.horizontalHeader()
+        horizontalHeader: qtw.QHeaderView = self.horizontalHeader()
         horizontalHeader.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.ResizeToContents)
         horizontalHeader.setSectionResizeMode(1, qtw.QHeaderView.ResizeMode.Stretch)
 
@@ -41,7 +41,7 @@ class TagDisplay(qtw.QTableWidget):
             parent: TagViewer = self.parent()
         
             # Will return None if there are no mods causing a traceback
-            tableWidgetItem = self.itemAt(event.pos())
+            tableWidgetItem: qtw.QTableWidgetItem | None = self.itemAt(event.pos())
 
             if tableWidgetItem is not None:
 

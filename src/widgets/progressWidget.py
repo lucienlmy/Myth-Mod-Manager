@@ -5,10 +5,10 @@ import logging
 
 import PySide6.QtGui as qtg
 import PySide6.QtWidgets as qtw
-from PySide6.QtCore import QThread, QCoreApplication as qapp, Slot
+from PySide6.QtCore import QThread, QCoreApplication as qapp, Slot, QMutex, QMutexLocker
 
 from src.widgets.QDialog.QDialog import Dialog
-from src.threaded.workerQObject import Worker
+
 if TYPE_CHECKING:
     from src.threaded.workerQObject import Worker
 
@@ -23,7 +23,10 @@ class ProgressWidget(Dialog):
 
         self.setWindowTitle(qapp.translate('ProgressWidget', 'Myth Mod Manager Task'))
 
-        self.mode = mode
+        self.mutex = QMutex()
+
+        self.mode: Worker = mode
+        self.mode.mutex = self.mutex
 
         layout = qtw.QVBoxLayout()
 
@@ -45,10 +48,10 @@ class ProgressWidget(Dialog):
         self.setLayout(layout)
 
         self.__initMode()
-    
+
     def __initMode(self) -> None:
         # Create QThread
-        self.qthread = QThread()
+        self.qthread = QThread(self)
         self.qthread.started.connect(self.mode.start)
 
         # Move task to QThread
@@ -75,14 +78,11 @@ class ProgressWidget(Dialog):
             f'{message}\n'+
             qapp.translate('ProgressWidget', 'Exit to continue')
         )
-        self.qthread.exit(1)
 
     @Slot()
     def succeeded(self) -> None:
         self.progressBar.setValue(self.progressBar.maximum())
         self.infoLabel.setText(qapp.translate('ProgressWidget', 'Done!'))
-
-        self.qthread.exit(0)
 
         self.accept()
     
@@ -91,27 +91,24 @@ class ProgressWidget(Dialog):
         if self.qthread.isRunning():
             self.cancel()
         else:
+            self.qthread.quit()
+            self.qthread.wait()
             self.mode.deleteLater()
-            self.qthread.deleteLater()
             return super().closeEvent(arg__1)
     
     @Slot()
     def cancel(self) -> None:
         '''
-        Sets the cancel flag to true in which FileMover() will exit the function
-        after it's done a step and pass the success signal
+        Sets the cancel flag to true in Worker and disables the cancel button
         '''
-
-        isModeCanceled = self.mode.cancel
-
-        if isModeCanceled:
-            self.qthread.exit(2)
-            self.reject()
 
         logging.info('Task %s was canceled', str(self.mode))
         self.infoLabel.setText(qapp.translate('ProgressWidget', 'Canceled, exit to continue'))
 
-        self.mode.cancel = True
+        with QMutexLocker(self.mutex):
+            self.mode.cancel = True
+
+        self.buttonBox.button(qtw.QDialogButtonBox.StandardButton.Cancel).setDisabled(True)
     
     @Slot(int, str)
     def updateProgressBar(self, x: int, y: str) -> None:
@@ -120,7 +117,7 @@ class ProgressWidget(Dialog):
         bar value and changes the text of the label
         '''
 
-        newValue = x + self.progressBar.value()
+        newValue: int = x + self.progressBar.value()
 
         self.infoLabel.setText(y)
         self.progressBar.setValue(newValue)

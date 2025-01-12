@@ -12,7 +12,8 @@ class ChangeModType(Worker):
         super().__init__()
         logging.getLogger(__name__)
 
-        self.mods = mods
+        self.mods: tuple[tuple[str, ModType], ...] = mods
+        self.mods_moved: list[tuple[str, str]] = []
     
     @Slot()
     def start(self) -> None:
@@ -20,30 +21,35 @@ class ChangeModType(Worker):
         Moves the mod to a new directory
         '''
 
-        try:
-            self.setTotalProgress.emit(len(self.mods))
+        self.setTotalProgress.emit(len(self.mods))
 
-            ChosenDir = None
-            
-            for mod in self.mods:
+        ChosenDir = None
+        
+        for mod in self.mods:
 
-                self.cancelCheck()
+            self.cancelCheck()
 
-                modsDirPath = mod[0]
-                ChosenDir = mod[1]
+            modsDirPath: str = mod[0]
+            ChosenDir: ModType = mod[1]
 
-                mod = os.path.basename(modsDirPath)
+            mod: str = os.path.basename(modsDirPath)
 
-                self.setCurrentProgress.emit(1, qapp.translate('ChangeModType', 'Installing') + f' {mod}')
+            self.setCurrentProgress.emit(1, qapp.translate('ChangeModType', 'Installing') + f' {mod}')
 
-                # Setting the Destination path
-                if errorChecking.isTypeMod(ChosenDir):
+            # Setting the Destination path
+            if errorChecking.isTypeMod(ChosenDir):
 
-                    modDestPath = self.p.mod(ChosenDir, mod)
+                modDestPath: list[str] | str = self.p.mod(ChosenDir, mod)
 
-                    self.move(modsDirPath, modDestPath)
-            
-            self.succeeded.emit()
+                self.move(modsDirPath, modDestPath)
+                self.mods_moved.append((modsDirPath, modDestPath))
 
-        except Exception as e:
-            self.error.emit(qapp.translate('ChangeModType', 'An error was raised while changing mod type:') + f'\n{e}')
+        
+        self.succeeded.emit()
+    
+    def onCancel(self) -> None:
+        self.setTotalProgress.emit(len(self.mods_moved))
+        for modPaths in self.mods_moved:
+            self.setCurrentProgress.emit(1, qapp.translate('ChangeModType', 'Uninstalling') + f' {os.path.basename(modPaths[0])}')
+            self.move(modPaths[1], modPaths[0])
+

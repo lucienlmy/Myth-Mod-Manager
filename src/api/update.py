@@ -10,6 +10,9 @@ from PySide6.QtCore import QObject, QUrl, Signal, Slot
 from src.constant_vars import ROOT_PATH, OLD_EXE
 
 class Update(QObject):
+    fileName: str
+    exe: str
+    tmp: str
 
     if sys.platform.startswith('win'):
         fileName = 'Myth-Mod-Manager.zip'
@@ -19,7 +22,7 @@ class Update(QObject):
         fileName = 'Myth-Mod-Manager.tar.gz'
         exe = 'Myth Mod Manager'
         tmp = '/tmp'
-    folder = 'Myth Mod Manager'
+    folder: str = 'Myth Mod Manager'
 
     doneCanceling = Signal()
     setCurrentProgress = Signal(int, str)
@@ -52,7 +55,7 @@ class Update(QObject):
 
         self.__cancelCheck()
 
-        reply = self.network.get(request)
+        reply: QNetworkReply = self.network.get(request)
 
         reply.finished.connect(self.__handle_assetURL_fetch)
 
@@ -75,7 +78,7 @@ class Update(QObject):
 
         self.__cancelCheck()
 
-        assetReply = self.network.get(QNetworkRequest(QUrl(assetUrl)))
+        assetReply: QNetworkReply = self.network.get(QNetworkRequest(QUrl(assetUrl)))
         assetReply.finished.connect(self.__download_assets)
     
     @Slot()
@@ -109,7 +112,7 @@ class Update(QObject):
 
             self.setCurrentProgress.emit(0, 'Downloading update')
 
-            updateReply = self.network.get(QNetworkRequest(QUrl(downloadLink)))
+            updateReply: QNetworkReply = self.network.get(QNetworkRequest(QUrl(downloadLink)))
             updateReply.downloadProgress.connect(lambda x, y: self.downloading.emit(x, y))
             updateReply.finished.connect(self.__install_update)
     
@@ -122,7 +125,7 @@ class Update(QObject):
 
         reply: QNetworkReply = self.sender()
 
-        downloadDir = os.path.join(self.tmp, self.fileName)
+        downloadDir: str = os.path.join(self.tmp, self.fileName)
 
         logging.info('Download complete!\nWriting update to computer to %s', downloadDir)
 

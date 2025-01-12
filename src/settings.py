@@ -7,6 +7,7 @@ from PySide6.QtCore import QCoreApplication as qapp, Signal, Qt, QTranslator, Sl
 
 from src.widgets.progressWidget import ProgressWidget
 from src.threaded.backupMods import BackupMods
+from src.threaded.newDisabledDir import NewDisabledDir
 from src.save import OptionsManager
 from src.getPath import Pathing
 from src.style import StyleManager
@@ -161,7 +162,18 @@ class Options(qtw.QWidget):
             self.optionsManager.setGamepath(self.optionsGeneral.gameDir.text())
 
         if self.optionChanged.get(OptionKeys.dispath):
-            self.optionsManager.setDispath(self.optionsGeneral.disabledModDir.text())
+            old_path: str = self.optionsManager.getDispath()
+            new_path: str = self.optionsGeneral.disabledModDir.text()
+
+            progressWidget = ProgressWidget(NewDisabledDir(old_path, new_path))
+            progressWidget.exec()
+
+            if not progressWidget.mode.cancel:
+                self.optionsManager.setDispath(new_path)
+            else:
+                # Revert text
+                self.optionsGeneral.disabledModDir.setText(old_path)
+
 
         if self.optionChanged.get(OptionKeys.color_theme):
             theme = LIGHT if self.optionsGeneral.colorThemeLight.isChecked() else DARK

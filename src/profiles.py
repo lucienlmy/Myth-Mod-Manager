@@ -24,17 +24,24 @@ class modProfile(qtw.QWidget):
 
         layout = qtw.QVBoxLayout()
 
+        self.addProfileButton = qtw.QPushButton(self)
+
         self.profileDisplay = ProfileList(self, profilePath)
 
+        self.addProfileButton.clicked.connect(self.profileDisplay.menuAddProfile)
         self.profileDisplay.applyProfile.connect(lambda x: self.applyMods(x))
 
         self.deselectAllShortcut = qtg.QShortcut(qtg.QKeySequence("Ctrl+D"), self)
         self.deselectAllShortcut.activated.connect(self.profileDisplay.unselectShortcut)
 
-        for widget in (self.profileDisplay, ):
+        for widget in (self.addProfileButton, self.profileDisplay):
             layout.addWidget(widget)
         
         self.setLayout(layout)
+        self.applyStaticText()
+
+    def applyStaticText(self) -> None:
+        self.addProfileButton.setText(qapp.translate('modProfile', 'Add Profile'))
 
     @Slot(list)
     def applyMods(self, mods: list[str]) -> None:
@@ -53,7 +60,7 @@ class modProfile(qtw.QWidget):
                 widget.refreshMods()
                 break
 
-        notInstalledMods = [x for x in mods if not errorChecking.isInstalled(x)]
+        notInstalledMods: list[str] = [x for x in mods if not errorChecking.isInstalled(x)]
 
         if notInstalledMods:
             notice = Notice(

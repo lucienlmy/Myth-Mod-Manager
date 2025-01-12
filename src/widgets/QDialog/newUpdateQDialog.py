@@ -148,7 +148,7 @@ class updateDetected(Dialog):
             
         self.updateProgressBar(current - self.lastIterBytes)
 
-        self.lastIterBytes = current
+        self.lastIterBytes: int = current
         
     @Slot(int)
     @Slot(int, str)

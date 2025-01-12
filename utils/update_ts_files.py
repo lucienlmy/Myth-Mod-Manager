@@ -14,12 +14,12 @@ def fill_missing_translations(ts_file, translation_file) -> None:
     with open(translation_file, 'r', encoding='utf8') as f:
         translations = f.readlines()
 
-    ts_hand = xml.etree.ElementTree.parse(ts_file)
+    ts_hand: xml.etree.ElementTree.ElementTree = xml.etree.ElementTree.parse(ts_file)
 
     index = 0
     for tag in ts_hand.findall('context'):
         for tag in tag.findall('message'):
-            translation = tag.find('translation')
+            translation: xml.etree.ElementTree.Element | None = tag.find('translation')
             if translation.get('type') is not None:
                 translation.text = translations[index].rstrip()
                 translation.attrib.pop('type')

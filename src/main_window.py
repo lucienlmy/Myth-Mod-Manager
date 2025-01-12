@@ -28,7 +28,7 @@ class MainWindow(qtw.QMainWindow):
         self.setMinimumSize(800, 800)
         self.resize(self.optionsManager.getWindowSize())
 
-        self.app = app
+        self.app: qapp | None = app
 
         self.tab = qtw.QTabWidget(self)
 
@@ -61,7 +61,7 @@ class MainWindow(qtw.QMainWindow):
             self.run_checkUpdate.updateDetected.connect(lambda x, y: self.updateDetected(x, y))
 
     def applyStaticText(self) -> None:
-        tab = self.tab.tabBar()
+        tab: qtw.QTabBar = self.tab.tabBar()
         tab.setTabText(0, qapp.translate('MainWindow', 'Manager'))
         tab.setTabText(1, qapp.translate('MainWindow', 'Profiles'))
         tab.setTabText(2, qapp.translate('MainWindow', 'Tools'))

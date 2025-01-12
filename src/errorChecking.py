@@ -21,7 +21,7 @@ logging.getLogger(__name__)
 def openWebPage(link: str) -> bool:
     '''`webbrowser.open_new_tab()` but with some exception handling, returns a bool depending if it failed or not'''
 
-    outcome = webbrowser.open_new_tab(link)
+    outcome: bool = webbrowser.open_new_tab(link)
 
     if not outcome:
 
@@ -34,7 +34,7 @@ def openWebPage(link: str) -> bool:
 
 def createModDirs(optionsPath: str = OPTIONS_CONFIG) -> None:
     path = Pathing(optionsPath)
-    disPath = OptionsManager(optionsPath).getDispath()
+    disPath: str = OptionsManager(optionsPath).getDispath()
 
     for modDir in (path.maps(), path.mod_overrides(), path.mods(), disPath):
         if not os.path.isdir(modDir):
@@ -47,7 +47,7 @@ def isInstalled(mod: str, optionsPath: str = OPTIONS_CONFIG) -> bool:
 
     path = Pathing(optionsPath)
 
-    possiblePaths = (path.maps(), path.mod_overrides(), path.mods(), OptionsManager(optionsPath).getDispath())
+    possiblePaths: tuple[str, str, str, str] = (path.maps(), path.mod_overrides(), path.mods(), OptionsManager(optionsPath).getDispath())
 
     for path in possiblePaths:
 
@@ -104,7 +104,7 @@ def permissionCheck(src: str) -> int:
     Returns a code depending on the outcome
     '''
 
-    permission = str(oct(os.stat(src).st_mode))[-3:]
+    permission: str = str(oct(os.stat(src).st_mode))[-3:]
 
     if int(permission) != 777:
         logging.warning('Permission error found, fixing...')
@@ -134,7 +134,7 @@ def startFile(path: str) -> None:
             os.startfile(path)
         else:
             cmd = 'open' if sys.platform == 'darwin' else 'xdg-open'
-            returnCode = subprocess.run([cmd, path], shell=True)
+            returnCode: subprocess.CompletedProcess[bytes] = subprocess.run([cmd, path], shell=True)
             returnCode.check_returncode()
 
     except Exception as e:

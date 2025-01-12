@@ -34,7 +34,7 @@ class checkUpdate(QObject):
         request = QNetworkRequest(QUrl(link))
         logging.debug('Request for %s from checkUpdate() started', link)
         
-        self.reply = network.get(request)
+        self.reply: QNetworkReply = network.get(request)
         self.reply.finished.connect(self.__reply_handler)
     
     @Slot()
@@ -58,6 +58,7 @@ class checkUpdate(QObject):
             self.error.emit()
             self.deleteLater()
 
+        latestVersion: Version
         if isPrerelease(VERSION):
             latestVersion = Version.coerce(data[0]['tag_name'])
         else:

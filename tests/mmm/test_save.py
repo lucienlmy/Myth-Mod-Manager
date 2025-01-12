@@ -37,7 +37,7 @@ def test_saveMethods(createTemp_Mod_ini: str) -> None:
     assert save.getModworkshopAssetID(modName) == '12345'
 
     # Testing Sequence argument for addMods
-    modsList = ['I hate my teammates mod', 'cats mod']
+    modsList: list[str] = ['I hate my teammates mod', 'cats mod']
 
     save.addMods((modsList, ModType.mods_override))
 
@@ -55,16 +55,14 @@ def test_saveMethods(createTemp_Mod_ini: str) -> None:
 
     assert len(save.mods()) == 0
 
-def test_testOptions(createTemp_Config_ini: str, getDir: str) -> None:
+def test_testOptions(createTemp_Config_ini: str, create_mod_dirs: str) -> None:
 
     options = OptionsManager(createTemp_Config_ini)
 
-    game_path = os.path.join(getDir, 'game_path')
-
     assert options.hasOption(OptionKeys.game_path.value)
-    assert options.getGamepath() == game_path
+    assert options.getGamepath() == create_mod_dirs
     assert options.hasOption(OptionKeys.dispath.value)
-    assert options.getDispath() == os.path.join(game_path, 'disabledMods')
+    assert options.getDispath() == os.path.join(create_mod_dirs, 'disabledMods')
 
 def test_OptionsMethods(createTemp_Config_ini: str) -> None:
 

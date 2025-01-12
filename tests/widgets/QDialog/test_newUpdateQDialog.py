@@ -1,4 +1,6 @@
 import pytest
+from typing import Generator
+
 from pytestqt.qtbot import QtBot
 
 from semantic_version import Version
@@ -6,8 +8,8 @@ from semantic_version import Version
 from src.widgets.QDialog.newUpdateQDialog import updateDetected
 from src.constant_vars import VERSION
 
-@pytest.fixture
-def create_dialog(qtbot: QtBot) -> updateDetected:
+@pytest.fixture(scope='function')
+def create_dialog(qtbot: QtBot) -> Generator:
     widget = updateDetected(Version(major=1, minor=5, patch=6), 'release notes')
     qtbot.addWidget(widget)
 
@@ -39,7 +41,7 @@ def test_cancel(create_dialog: updateDetected) -> None:
     create_dialog.cancel()
 
     assert create_dialog.message.text() == 'Canceling... (Finishing current step)'
-    assert create_dialog.autoUpdate.cancel == True
+    assert create_dialog.autoUpdate.cancel is True
 
     create_dialog.autoUpdate.doneCanceling.emit()
 
@@ -60,7 +62,7 @@ def test_updateProgressBar(create_dialog: updateDetected) -> None:
 def test_downloadStarted(create_dialog: updateDetected) -> None:
     total = 900
 
-    assert create_dialog.downloadState == False
+    assert create_dialog.downloadState is False
 
     create_dialog.downloadStarted(101, total)
 

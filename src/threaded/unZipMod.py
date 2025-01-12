@@ -12,7 +12,7 @@ class UnZipMod(Worker):
     def __init__(self, *mods: tuple[str, ModType]) -> None:
         super().__init__()
 
-        self.mods = mods
+        self.mods: tuple[tuple[str, ModType], ...] = mods
 
     @Slot()
     def start(self) -> None:
@@ -20,17 +20,17 @@ class UnZipMod(Worker):
 
         self.setTotalProgress.emit(len(self.mods))
 
-        modDestDict = {ModType.mods : self.p.mods(), ModType.mods_override : self.p.mod_overrides(), ModType.maps : self.p.maps()}
+        modDestDict: dict[ModType, str] = {ModType.mods : self.p.mods(), ModType.mods_override : self.p.mod_overrides(), ModType.maps : self.p.maps()}
 
         try:
 
             for modURL in self.mods:
 
-                src = modURL[0]
+                src: str = modURL[0]
 
-                mod = os.path.basename(src)
+                mod: str = os.path.basename(src)
 
-                modType = modURL[1]
+                modType: ModType = modURL[1]
 
                 self.cancelCheck()
 

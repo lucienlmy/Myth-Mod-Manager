@@ -1,7 +1,7 @@
 import os
 
 import PySide6.QtWidgets as qtw
-from PySide6.QtCore import Qt as qt, QCoreApplication as qapp, Slot
+from PySide6.QtCore import QUrl, Qt as qt, QCoreApplication as qapp, Slot
 
 from src.widgets.toolQWidget import ExternalToolDisplay
 
@@ -30,11 +30,13 @@ class ToolManager(qtw.QWidget):
     @Slot()
     def createTools(self) -> None:
         dialog = qtw.QFileDialog()
-        urls = dialog.getOpenFileUrl(self,
-                                       caption=qapp.translate("ToolManager", 'Select External Tool(s)'), 
-                                       filter=qapp.translate("ToolManager", 'Executables') + '(*.exe *.bat *.sh);;Any (*)')
+        urls: tuple[QUrl, str] = dialog.getOpenFileUrl(
+            self,
+            caption=qapp.translate("ToolManager", 'Select External Tool(s)'), 
+            filter=qapp.translate("ToolManager", 'Executables') + '(*.exe *.bat *.sh);;Any (*)'
+        )
         
-        new_url = urls[0].toLocalFile()
+        new_url: str = urls[0].toLocalFile()
 
         if os.path.isfile(new_url):
             self.toolsWidget.addTool(new_url)

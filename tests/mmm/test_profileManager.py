@@ -30,7 +30,7 @@ def test_changeProfile(create_profileManager: ProfileManager) -> None:
 
     list_of_profiles = list(create_profileManager.getJSON().keys())
 
-    assert not 'profile1' in list_of_profiles
+    assert 'profile1' not in list_of_profiles
     assert 'profile2' in list_of_profiles
     assert create_profileManager.getMods('profile2') == ['pizza_gloves']
 
@@ -44,4 +44,4 @@ def test_removeProfile(create_profileManager: ProfileManager) -> None:
 
     create_profileManager.removeProfile('profile2')
 
-    assert not 'profile2' in list(create_profileManager.getJSON().keys())
+    assert 'profile2' not in list(create_profileManager.getJSON().keys())

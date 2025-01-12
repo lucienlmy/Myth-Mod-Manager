@@ -1,3 +1,4 @@
+from typing import List
 import PySide6.QtWidgets as qtw
 from PySide6.QtCore import Qt as qt, QCoreApplication as qapp, Slot
 
@@ -44,11 +45,14 @@ class SelectProfile(Dialog):
     @Slot(str)
     def search(self, input: str) -> None:
 
-        results = self.profileList.findItems(f'{input}*', qt.MatchFlag.MatchWildcard | qt.MatchFlag.MatchExactly)
+        results: List[qtw.QListWidgetItem] = self.profileList.findItems(
+            f'{input}*',
+            qt.MatchFlag.MatchWildcard | qt.MatchFlag.MatchExactly
+        )
 
         for i in range(0, self.profileList.count() + 1):
 
-            item = self.profileList.item(i)
+            item: qtw.QListWidgetItem = self.profileList.item(i)
 
             if item not in results:
                 self.profileList.setRowHidden(i, True)

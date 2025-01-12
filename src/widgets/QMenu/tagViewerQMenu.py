@@ -13,7 +13,7 @@ class TagViewerMenu(ModContextMenu):
     def __init__(self, qParent: TagViewer) -> None:
         super().__init__(qParent)
 
-        self.qParent = qParent
+        self.qParent: TagViewer = qParent
 
         self.addTag = qtg.QAction(self)
         self.addTag.triggered.connect(lambda: self.callFunc(self.qParent.addTags))

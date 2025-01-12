@@ -1,6 +1,8 @@
 import tempfile
 import os
+from typing import Generator
 
+from PySide6.QtWidgets import QTableWidgetItem
 import pytest
 from pytestqt.qtbot import QtBot
 
@@ -15,7 +17,7 @@ MODS = (('mod1', ModType.mods, True, '2.3.0', ['cool']),
         )
 
 @pytest.fixture(scope='module')
-def create_QTable(createTemp_Config_ini: str, createTemp_Mod_ini: str) -> ModListWidget:
+def create_QTable(createTemp_Config_ini: str, createTemp_Mod_ini: str) -> Generator:
 
     widget = ModListWidget(createTemp_Mod_ini, createTemp_Config_ini)
 
@@ -23,7 +25,7 @@ def create_QTable(createTemp_Config_ini: str, createTemp_Mod_ini: str) -> ModLis
     widget.addMod(name=MODS[1][0], type=MODS[1][1], enabled=MODS[1][2], version=MODS[1][3], tags=MODS[1][4])
     widget.addMod(name=MODS[2][0], type=MODS[2][1], enabled=MODS[2][2], version=MODS[2][3], tags=MODS[2][4])
 
-    return widget
+    yield widget
 
 def test_addMods(create_QTable: ModListWidget) -> None:
 
@@ -50,10 +52,10 @@ def test_sort(create_QTable: ModListWidget) -> None:
 def test_getSelectedNameItems(create_QTable: ModListWidget) -> None:
 
     create_QTable.selectAll()
-    allNameItems = create_QTable.getSelectedNameItems()
+    allNameItems: list[QTableWidgetItem] = create_QTable.getSelectedNameItems()
     assert len(allNameItems) == 3
 
-    names = (MODS[0][0], MODS[1][0], MODS[2][0])
+    names: tuple[str, str, str] = (MODS[0][0], MODS[1][0], MODS[2][0])
 
     for item in allNameItems:
         assert item.text() in names
@@ -61,23 +63,23 @@ def test_getSelectedNameItems(create_QTable: ModListWidget) -> None:
 def test_getModTypeCount(create_QTable: ModListWidget) -> None:
     assert create_QTable.getModTypeCount(ModType.mods) == 1
 
-def test_Icon(create_QTable: ModListWidget, getDir: str) -> None:
+def test_Icon(create_QTable: ModListWidget, create_mod_dirs: str) -> None:
 
-    with tempfile.TemporaryDirectory(dir=os.path.join(getDir, 'game_path', 'mods')) as tmp_mod:
+    with tempfile.TemporaryDirectory(dir=os.path.join(create_mod_dirs, 'mods')) as tmp_mod:
 
-        tmp_mod_name = [os.path.basename(tmp_mod)]
+        tmp_mod_name: list[str] = [os.path.basename(tmp_mod)]
 
         create_QTable.saveManager.addMods((tmp_mod_name, ModType.mods))
         create_QTable.saveManager.setModWorkshopAssetID(tmp_mod_name[0], '1234')
 
         create_QTable.refreshMods()
-        tmp_mod_item = create_QTable.findItems(tmp_mod_name[0], qt.MatchFlag.MatchExactly)[0]
+        tmp_mod_item: QTableWidgetItem = create_QTable.findItems(tmp_mod_name[0], qt.MatchFlag.MatchExactly)[0]
 
-        assert tmp_mod_item.icon().isNull() == False
+        assert tmp_mod_item.icon().isNull() is False
 
 #TODO: Test installMods()
 @pytest.mark.skip
-def test_installMods():
+def test_installMods() -> None:
     pass
 
 def test_widget(qtbot: QtBot, create_QTable: ModListWidget) -> None:
@@ -85,5 +87,5 @@ def test_widget(qtbot: QtBot, create_QTable: ModListWidget) -> None:
     qtbot.addWidget(create_QTable)
 
     assert create_QTable.columnCount() == 4
-    assert create_QTable.verticalHeader().isHidden() == True
+    assert create_QTable.verticalHeader().isHidden() is True
     

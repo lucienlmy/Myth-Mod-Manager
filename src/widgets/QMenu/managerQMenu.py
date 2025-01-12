@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 import PySide6.QtGui as qtg
 from PySide6.QtCore import QCoreApplication as qapp
+from PySide6.QtWidgets import QTableWidgetItem
 
 from src.widgets.QMenu.QMenu import ModContextMenu
 
@@ -13,7 +14,7 @@ class ManagerMenu(ModContextMenu):
     def __init__(self, qParent: ModListWidget) -> None:
         super().__init__(qParent)
 
-        self.qParent = qParent
+        self.qParent: ModListWidget = qParent
 
         self.enable = qtg.QAction(self)
         self.enable.triggered.connect(lambda: self.callFunc(self.qParent.setItemEnabled))
@@ -58,7 +59,7 @@ class ManagerMenu(ModContextMenu):
 # EVENT OVERRIDES
 
     def showEvent(self, event: qtg.QShowEvent) -> None:
-        selectedItems = self.qParent.getSelectedNameItems()
+        selectedItems: list[QTableWidgetItem] = self.qParent.getSelectedNameItems()
         if len(selectedItems) <= 0:
             event.accept()
             return

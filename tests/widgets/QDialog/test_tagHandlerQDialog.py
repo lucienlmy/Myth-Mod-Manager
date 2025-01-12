@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt as qt
 
 from src.widgets.QDialog.tagHandlerQDialog import TagHandler
 
-MOCK_ALL_TAGS = ['anime', 'favorites', 'joke']
+MOCK_ALL_TAGS: list[str] = ['anime', 'favorites', 'joke']
 
 def test_tagHandler(qtbot: QtBot) -> None:
     widget = TagHandler(0, MOCK_ALL_TAGS)

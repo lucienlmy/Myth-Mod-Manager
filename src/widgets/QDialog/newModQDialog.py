@@ -20,7 +20,7 @@ class newModLocation(Dialog):
         self.setMinimumSize(320, 180)
         self.setSizePolicy(qtw.QSizePolicy.Policy.MinimumExpanding, qtw.QSizePolicy.Policy.Preferred)
 
-        self.modName = modName
+        self.modName: tuple[str, ...] = modName
                             
         layout = qtw.QVBoxLayout()
 
@@ -114,7 +114,7 @@ class newModLocation(Dialog):
 
             buttons: list[qtw.QRadioButton] = item.findChildren(qtw.QRadioButton)
 
-            modName = os.path.basename(self.modName[count])
+            modName: str = os.path.basename(self.modName[count])
 
             if buttons[0].isChecked():
 

@@ -1,7 +1,9 @@
 import pytest
+from typing import Generator
+
 from pytestqt.qtbot import QtBot
 
-from PySide6.QtCore import Qt as qt
+from PySide6.QtWidgets import QListWidgetItem
 
 from src.widgets.toolQWidget import ExternalToolDisplay
 
@@ -13,8 +15,8 @@ URL_TO_BE_DELETED = 'D:\\path\\payday.exe'
 
 # ExternalToolDisplay starts with 3 items
 @pytest.fixture(scope='function')
-def create_ExternalToolDisplay(createTemp_externalShortcuts_ini: str) -> ExternalToolDisplay:
-    return ExternalToolDisplay(createTemp_externalShortcuts_ini)
+def create_ExternalToolDisplay(createTemp_externalShortcuts_ini: str) -> Generator:
+    yield ExternalToolDisplay(createTemp_externalShortcuts_ini)
 
 def test_deleteItem(create_ExternalToolDisplay: ExternalToolDisplay) -> None:
 
@@ -25,7 +27,7 @@ def test_deleteItem(create_ExternalToolDisplay: ExternalToolDisplay) -> None:
 def test_changeName(create_ExternalToolDisplay: ExternalToolDisplay) -> None:
 
     create_ExternalToolDisplay.changeName(NEW_URL, EXPECTED_URL)
-    item = create_ExternalToolDisplay.item(0)
+    item: QListWidgetItem = create_ExternalToolDisplay.item(0)
     assert item.text() == NEW_URL
 
 def test_addTool(create_ExternalToolDisplay: ExternalToolDisplay) -> None:

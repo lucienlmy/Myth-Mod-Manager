@@ -11,9 +11,9 @@ class GamePathNotFound(Dialog):
     def __init__(self, QParent: qtw.QWidget | qtw.QApplication, optionsPath: str = OPTIONS_CONFIG) -> None:
         super().__init__()
 
-        self.QParent = QParent
+        self.QParent: qtw.QWidget | qtw.QApplication = QParent
 
-        style = self.style()
+        style: qtw.QStyle = self.style()
 
         self.setWindowTitle(qapp.translate('GamePathNotFound', 'Set game path'))
 
@@ -55,7 +55,7 @@ class GamePathNotFound(Dialog):
     @Slot()
     def openFileDialog(self) -> None:
         dialog = qtw.QFileDialog()
-        url = dialog.getExistingDirectory(
+        url: str = dialog.getExistingDirectory(
             self,
             caption=qapp.translate('GamePathNotFound', 'Select PAYDAY 2 Directory')
         )
@@ -66,15 +66,12 @@ class GamePathNotFound(Dialog):
     @Slot()
     def checkGamePath(self) -> None:
 
-        gamePath = self.gameDir.text()
-        okButton = self.buttonBox.button(qtw.QDialogButtonBox.StandardButton.Ok)
+        gamePath: str = self.gameDir.text()
+        okButton: qtw.QPushButton = self.buttonBox.button(qtw.QDialogButtonBox.StandardButton.Ok)
 
         if len(gamePath) > 0:
-
             okButton.setEnabled(True)
-
         else:
-
             okButton.setEnabled(False)
     
     @Slot()

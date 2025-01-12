@@ -1,3 +1,4 @@
+from typing import List
 import PySide6.QtWidgets as qtw
 from PySide6.QtCore import Qt as qt, QCoreApplication as qapp, Slot
 
@@ -40,8 +41,8 @@ class SelectMod(Dialog):
 
         # Add tags
         for i in range(self.modList.count()):
-            item = self.modList.item(i)
-            modTags = self.saveManager.getTags(item.text())
+            item: qtw.QListWidgetItem = self.modList.item(i)
+            modTags: list[str] = self.saveManager.getTags(item.text())
             if modTags is not None:
                 item.setData(ModRole.tags, modTags)
 
@@ -55,16 +56,19 @@ class SelectMod(Dialog):
         searchedTags = None
 
         if input.startswith('tag:') and len(input) > 4:
-            splitStr = input.split(' ')
+            splitStr: list[str] = input.split(' ')
             input = ' '.join(splitStr[1:])
-            searchedTags = splitStr[0][4:].split(',')
+            searchedTags: list[str] = splitStr[0][4:].split(',')
 
 
-        results = self.modList.findItems(f'{input}*', qt.MatchFlag.MatchWildcard | qt.MatchFlag.MatchExactly)
+        results: List[qtw.QListWidgetItem] = self.modList.findItems(
+            f'{input}*',
+            qt.MatchFlag.MatchWildcard | qt.MatchFlag.MatchExactly
+        )
 
         for i in range(self.modList.count()):
 
-            item = self.modList.item(i)
+            item: qtw.QListWidgetItem = self.modList.item(i)
             if item is not None:
                 modTags: tuple[str] | None = item.data(ModRole.tags)
 
