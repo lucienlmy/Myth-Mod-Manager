@@ -2,7 +2,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import PySide6.QtGui as qtg
-from PySide6.QtCore import QCoreApplication as qapp
+from PySide6.QtCore import QCoreApplication as qapp, Slot
+from PySide6.QtWidgets import QTableWidgetItem
 
 from src.widgets.QMenu.QMenu import ModContextMenu
 
@@ -13,37 +14,69 @@ class ManagerMenu(ModContextMenu):
     def __init__(self, qParent: ModListWidget) -> None:
         super().__init__(qParent)
 
-        self.qParent = qParent
+        self.qParent: ModListWidget = qParent
 
         self.enable = qtg.QAction(self)
-        self.enable.triggered.connect(lambda: self.callFunc(self.qParent.setItemEnabled))
+        self.enable.triggered.connect(self.onEnableTriggered)
 
         self.disable = qtg.QAction(self)
-        self.disable.triggered.connect(lambda: self.callFunc(self.qParent.setItemDisabled))
+        self.disable.triggered.connect(self.onDisableTriggered)
 
         self.delete = qtg.QAction(self)
-        self.delete.triggered.connect(lambda: self.callFunc(self.qParent.deleteItem))
+        self.delete.triggered.connect(self.onDeleteTriggered)
 
         self.checkUpdate = qtg.QAction(self)
-        self.checkUpdate.triggered.connect(lambda: self.callFunc(self.qParent.checkModUpdate))
+        self.checkUpdate.triggered.connect(self.onCheckUpdateTriggered)
 
         self.visitModPage = qtg.QAction(self)
-        self.visitModPage.triggered.connect(lambda: self.callFunc(self.qParent.visitModPage))
+        self.visitModPage.triggered.connect(self.onVisitModPageTriggered)
 
         self.openModDir = qtg.QAction(self)
-        self.openModDir.triggered.connect(lambda: self.callFunc(self.qParent.openModDir))
+        self.openModDir.triggered.connect(self.onOpenModDirTriggered)
 
         self.hideMod = qtg.QAction(self)
-        self.hideMod.triggered.connect(lambda: self.callFunc(self.qParent.hideMod))
+        self.hideMod.triggered.connect(self.onHideModTriggered)
 
         self.viewTags = qtg.QAction(self)
-        self.viewTags.triggered.connect(lambda: self.callFunc(self.qParent.viewTags))
+        self.viewTags.triggered.connect(self.onViewTagsTriggered)
 
         self.addActions((self.enable, self.disable, self.hideMod, self.delete, self.addSeparator(),
                          self.visitModPage, self.checkUpdate, self.openModDir, self.addSeparator(),
                          self.viewTags))
 
         self.applyStaticText()
+
+    @Slot()
+    def onEnableTriggered(self) -> None:
+        self.callFunc(self.qParent.setItemEnabled)
+    
+    @Slot()
+    def onDisableTriggered(self) -> None:
+        self.callFunc(self.qParent.setItemDisabled)
+
+    @Slot()
+    def onDeleteTriggered(self) -> None:
+        self.callFunc(self.qParent.deleteItem)
+
+    @Slot()
+    def onCheckUpdateTriggered(self) -> None:
+        self.callFunc(self.qParent.checkModUpdate)
+    
+    @Slot()
+    def onVisitModPageTriggered(self) -> None:
+        self.callFunc(self.qParent.visitModPage)
+
+    @Slot()
+    def onOpenModDirTriggered(self) -> None:
+        self.callFunc(self.qParent.openModDir)
+
+    @Slot()
+    def onHideModTriggered(self) -> None:
+        self.callFunc(self.qParent.hideMod)
+
+    @Slot()
+    def onViewTagsTriggered(self) -> None:
+        self.callFunc(self.qParent.viewTags)
 
     def applyStaticText(self) -> None:
         self.enable.setText(qapp.translate('ManagerMenu', 'Enable'))
@@ -58,7 +91,7 @@ class ManagerMenu(ModContextMenu):
 # EVENT OVERRIDES
 
     def showEvent(self, event: qtg.QShowEvent) -> None:
-        selectedItems = self.qParent.getSelectedNameItems()
+        selectedItems: list[QTableWidgetItem] = self.qParent.getSelectedNameItems()
         if len(selectedItems) <= 0:
             event.accept()
             return

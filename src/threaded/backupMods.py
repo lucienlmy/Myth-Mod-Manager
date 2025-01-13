@@ -17,25 +17,25 @@ class BackupMods(Worker):
 
             # Step 1: Gather Options
 
-            disPath = self.optionsManager.getDispath()
+            disPath: str = self.optionsManager.getDispath()
 
             # Step 2: Set Paths
 
-            modPath = self.p.mods()
+            modPath: str = self.p.mods()
 
-            mod_overridePath = self.p.mod_overrides()
+            mod_overridePath: str = self.p.mod_overrides()
 
-            maps_path = self.p.maps()
+            maps_path: str = self.p.maps()
 
-            bundledModsPath = os.path.join(self.bundledFilePath, 'mods')
+            bundledModsPath: str = os.path.join(self.bundledFilePath, 'mods')
 
-            bundledOverridePath = os.path.join(self.bundledFilePath, 'assets', 'mod_overrides')
+            bundledOverridePath: str = os.path.join(self.bundledFilePath, 'assets', 'mod_overrides')
 
-            bundledMapsPath = os.path.join(self.bundledFilePath, 'Maps')
+            bundledMapsPath: str = os.path.join(self.bundledFilePath, 'Maps')
 
-            outputPathDict = {ModType.mods_override : bundledOverridePath, ModType.mods : bundledModsPath, ModType.maps : bundledMapsPath}
+            outputPathDict: dict[ModType, str] = {ModType.mods_override : bundledOverridePath, ModType.mods : bundledModsPath, ModType.maps : bundledMapsPath}
 
-            srcPathDict = {ModType.mods_override : mod_overridePath, ModType.mods : modPath, ModType.maps : maps_path}
+            srcPathDict: dict[ModType, str] = {ModType.mods_override : mod_overridePath, ModType.mods : modPath, ModType.maps : maps_path}
 
             try:
 
@@ -63,8 +63,6 @@ class BackupMods(Worker):
                 # Step 5: Copy each mod into the backup folder
                 for mod in (x for x in mods):
 
-                    self.cancelCheck()
-
                     self.setCurrentProgress.emit(1,
                         qapp.translate('BackupMods', 'Copying') +
                         f' {mod} ' +
@@ -72,7 +70,7 @@ class BackupMods(Worker):
                         f' {BACKUP_MODS}'
                     )
 
-                    modType = self.saveManager.getType(mod)
+                    modType: ModType | None = self.saveManager.getType(mod)
 
                     # In the case this file is not a mod
                     if modType is None:
@@ -80,9 +78,9 @@ class BackupMods(Worker):
                         continue
 
                     # If the mod is disabled then the src will go to the disabled mods directory
-                    src = os.path.join(srcPathDict[modType], mod) if self.saveManager.getEnabled(mod) else os.path.join(disPath, mod)
+                    src: str = os.path.join(srcPathDict[modType], mod) if self.saveManager.getEnabled(mod) else os.path.join(disPath, mod)
 
-                    output = os.path.join(outputPathDict[modType], mod)
+                    output: str = os.path.join(outputPathDict[modType], mod)
 
                     # shutil.copytree() can't overwrite files, so if it already exists it must be deleted first
                     if os.path.exists(output):
@@ -92,6 +90,8 @@ class BackupMods(Worker):
                         shutil.rmtree(output)
 
                     shutil.copytree(src, output)
+                    self.cancelCheck()
+                    self.rest()
                 
                 self.cancelCheck()
 
@@ -115,13 +115,13 @@ class BackupMods(Worker):
                 self.succeeded.emit()
 
             except Exception as e:
+                self.onCancel()
 
-                # If something goes wrong, delete the unfinished bundled file
-                if os.path.exists(self.bundledFilePath):
-                    shutil.rmtree(self.bundledFilePath)
+                self.error.emit(
+                    qapp.translate('BackupMods', 'An error was raised while backing up mods') +
+                    f':\n{e}'
+                )
 
-                if not self.cancel:
-                    self.error.emit(
-                        qapp.translate('BackupMods', 'An error was raised while backing up mods') +
-                        f':\n{e}'
-                    )
+    def onCancel(self) -> None:
+        if os.path.exists(self.bundledFilePath):
+            shutil.rmtree(self.bundledFilePath)

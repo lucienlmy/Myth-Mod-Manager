@@ -12,7 +12,7 @@ def __loadXML(modPath: str) -> et.ElementTree | None:
 
     xmlName = 'main.xml'
 
-    xmlPath = os.path.join(modPath, xmlName)
+    xmlPath: str = os.path.join(modPath, xmlName)
 
     xml = None
 
@@ -20,7 +20,7 @@ def __loadXML(modPath: str) -> et.ElementTree | None:
     
     try:
         if os.path.exists(xmlPath):
-            xml = et.parse(xmlPath)
+            xml: et.ElementTree = et.parse(xmlPath)
     except Exception as e:
         logging.error('Something went wrong parsing an xml file in %s:\n%s', os.path.basename(modPath), str(e))
     
@@ -55,17 +55,17 @@ def findModworkshopAssetID(modPath: str) -> str:
 
     assetID = ''
 
-    xml = __loadXML(modPath)
+    xml: et.ElementTree | None = __loadXML(modPath)
 
     if xml is None:
         return assetID
 
-    assetUpdates = xml.find('AssetUpdates')
+    assetUpdates: et.Element | None = xml.find('AssetUpdates')
 
     if assetUpdates is not None:
 
-        modworkshop = assetUpdates.attrib.get('provider') == 'modworkshop'
-        assetID = assetUpdates.attrib.get('id', '')
+        modworkshop: bool = assetUpdates.attrib.get('provider') == 'modworkshop'
+        assetID: str = assetUpdates.attrib.get('id', '')
 
         if modworkshop and assetID:
             return assetID
@@ -78,14 +78,14 @@ def findModVersion(modPath: str) -> Version | None:
 
         version: str | None = None
 
-        xml = __loadXML(modPath)
+        xml: et.ElementTree | None = __loadXML(modPath)
 
         txtName = 'mod.txt'
-        txtPath = os.path.join(modPath, txtName)
+        txtPath: str = os.path.join(modPath, txtName)
 
         if xml is not None:
 
-            assetUpdates = xml.find('AssetUpdates')
+            assetUpdates: et.Element | None = xml.find('AssetUpdates')
 
             if assetUpdates is not None and assetUpdates.attrib.get('version'):
 
@@ -100,7 +100,7 @@ def findModVersion(modPath: str) -> Version | None:
                 logging.debug('Checking txt file of %s', os.path.basename(modPath))
                 with open(txtPath, 'r') as f:
                     for line in f.readlines():
-                        line = line.strip()
+                        line: str = line.strip()
 
                         if line.startswith('"version"'):
 

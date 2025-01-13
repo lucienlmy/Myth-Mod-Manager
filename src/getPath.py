@@ -7,7 +7,7 @@ class Pathing():
     '''Getter functions that shorten the process of obtaining mod paths'''
 
     def __init__(self, optionFile: str = OPTIONS_CONFIG) -> None:
-        self.option = optionFile
+        self.option: str = optionFile
     
     def __getGamepath(self) -> str:
         return OptionsManager(self.option).getGamepath()
@@ -30,9 +30,11 @@ class Pathing():
         does not check if the return value exists
         '''
 
-        pathsDict = {ModType.mods : os.path.join(self.mods(), modName),
-                    ModType.mods_override : os.path.join(self.mod_overrides(), modName),
-                    ModType.maps : os.path.join(self.maps(), modName)}
+        pathsDict: dict[ModType, str] = {
+            ModType.mods : os.path.join(self.mods(), modName),
+            ModType.mods_override : os.path.join(self.mod_overrides(), modName),
+            ModType.maps : os.path.join(self.maps(), modName)
+        }
 
         if type == ModType.all_types():
             return list(pathsDict.values())

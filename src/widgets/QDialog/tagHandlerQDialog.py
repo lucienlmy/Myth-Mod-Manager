@@ -11,8 +11,8 @@ class TagHandler(Dialog):
 
     def __init__(self, mode: int, allTags: list[str]) -> None:
         super().__init__()
-        self.mode = mode
-        self.allTags = allTags
+        self.mode: int = mode
+        self.allTags: list[str] = allTags
 
         self.VBoxLayout = qtw.QVBoxLayout()
 
@@ -49,7 +49,7 @@ class TagHandler(Dialog):
 
     @Slot()
     def lineEditTextChanged(self) -> None:
-        okButton = self.buttonBox.buttons()[0]
+        okButton: qtw.QAbstractButton = self.buttonBox.buttons()[0]
 
         if not len(self.input.text()) <= 0:
             okButton.setEnabled(True)

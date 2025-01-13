@@ -28,9 +28,9 @@ class About(qtw.QWidget):
         self.kofiLabel = qtw.QPushButton(self.buttonFrame)
         self.modworkshopLabel = qtw.QPushButton(self.buttonFrame)
 
-        self.githubLabel.clicked.connect(lambda: openWebPage('https://github.com/Wolfmyths/Myth-Mod-Manager'))
-        self.kofiLabel.clicked.connect(lambda: openWebPage('https://ko-fi.com/C0C4MJZS9'))
-        self.modworkshopLabel.clicked.connect(lambda: openWebPage('https://modworkshop.net/mod/43276'))
+        self.githubLabel.clicked.connect(self.onGithubLabelClicked)
+        self.kofiLabel.clicked.connect(self.onKofiLabelClicked)
+        self.modworkshopLabel.clicked.connect(self.onModworkshopLabelClicked)
 
         buttonFrameLayout = qtw.QHBoxLayout()
         buttonFrameLayout.setAlignment(qt.AlignmentFlag.AlignTop)
@@ -67,6 +67,18 @@ class About(qtw.QWidget):
             qapp.translate('About', 'Suggestions are greatly appreciated on modworkshop.net and github.')
         ]))
     
+    @Slot()
+    def onGithubLabelClicked(self) -> None:
+        openWebPage('https://github.com/Wolfmyths/Myth-Mod-Manager')
+    
+    @Slot()
+    def onKofiLabelClicked(self) -> None:
+        openWebPage('https://ko-fi.com/C0C4MJZS9')
+    
+    @Slot()
+    def onModworkshopLabelClicked(self) -> None:
+        openWebPage('https://modworkshop.net/mod/43276')
+
     @Slot(str)
     def updateIcons(self, mode: str) -> None:
 

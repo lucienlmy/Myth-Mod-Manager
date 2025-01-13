@@ -30,7 +30,7 @@ class ToolJSON(JSONParser):
 
         dupes: list[str] = []
 
-        shortcuts = self.getShortcuts()
+        shortcuts: list[str] = self.getShortcuts()
 
         for url in urls:
             if url not in shortcuts:
@@ -46,7 +46,7 @@ class ToolJSON(JSONParser):
         return dupes
     
     def removeTool(self, *urls: str) -> None:
-        shortcuts = self.getShortcuts()
+        shortcuts: list[str] = self.getShortcuts()
         for url in urls:
             if url in shortcuts:
                 logging.info('External tool at %s has been deleted', url)
@@ -55,10 +55,10 @@ class ToolJSON(JSONParser):
         self.file['shortcuts'] = shortcuts
     
     def changeTool(self, old: str, new: str) -> None:
-        shortcuts = self.getShortcuts()
+        shortcuts: list[str] = self.getShortcuts()
         if old in shortcuts:
             logging.info('External tool url has changed from %s to %s', old, new)
-            index = shortcuts.index(os.path.abspath(old))
+            index: int = shortcuts.index(os.path.abspath(old))
             shortcuts[index] = os.path.abspath(new)
         
         self.file['shortcuts'] = shortcuts

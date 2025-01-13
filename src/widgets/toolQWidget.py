@@ -34,15 +34,16 @@ class ExternalToolDisplay(qtw.QListWidget):
 
         for s in url:
 
-            if s in dupes: continue
+            if s in dupes:
+                continue
 
             item = qtw.QListWidgetItem(s)
             item.setFlags(qt.ItemFlag.ItemIsEnabled | qt.ItemFlag.ItemNeverHasChildren)
             self.addItem(item)
 
             frame = ExternalTool(s)
-            frame.deleted.connect(lambda x: self.deleteItem(x))
-            frame.nameChanged.connect(lambda x, y: self.changeName(x, y))
+            frame.deleted.connect(self.deleteItem)
+            frame.nameChanged.connect(self.changeName)
             item.setSizeHint(QSize(245, 245))
 
             self.setItemWidget(item, frame)
@@ -57,14 +58,17 @@ class ExternalToolDisplay(qtw.QListWidget):
     
     @Slot(str)
     def deleteItem(self, url: str) -> None:
-        item = self.findItems(url, qt.MatchFlag.MatchExactly)
-        if item:
-            item = item[0]
-        else:
-            logging.error('ExternalToolDisplay.deleteItem(): Looked for %s and could not find it', url)
+        
+        try:
+            item: qtw.QListWidgetItem = self.findItems(url, qt.MatchFlag.MatchExactly)[0]
+        except IndexError as e:
+            logging.error(
+                'ExternalToolDisplay.deleteItem(): Looked for %s and could not find it\n%s',
+                url, e
+            )
             return
 
-        index = self.row(item)
+        index: int = self.row(item)
         self.external_tools.pop(index)
         self.takeItem(index)
 
@@ -73,11 +77,14 @@ class ExternalToolDisplay(qtw.QListWidget):
 
     @Slot(str, str)
     def changeName(self, newUrl: str, oldUrl: str) -> None:
-        item = self.findItems(oldUrl, qt.MatchFlag.MatchExactly)
-        if item:
-            item = item[0]
-        else:
-            logging.error('ExternalToolDisplay.changeName(): Looked for %s and could not find it', oldUrl)
+        
+        try:
+            item: qtw.QListWidgetItem = self.findItems(oldUrl, qt.MatchFlag.MatchExactly)[0]
+        except IndexError as e:
+            logging.error(
+                'ExternalToolDisplay.changeName(): Looked for %s and could not find it\n%s',
+                oldUrl, e
+            )
             return
 
         item.setText(newUrl)

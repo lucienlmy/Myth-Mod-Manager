@@ -214,7 +214,7 @@ class OptionsManager():
             logging.warning('%s does not exist, creating...', OptionsManager.file)
 
             # Create a new .ini
-            with open(OptionsManager.file, 'w+') as f:
+            with open(OptionsManager.file, 'w+') as _f:
                 pass
 
         OptionsManager.read()

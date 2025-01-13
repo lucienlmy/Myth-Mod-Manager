@@ -4,7 +4,9 @@ from src.toolsData import ToolJSON
 
 MOCK_URL = 'C:\\mock\\url'
 
-EXPECTED_SHORTCUTS = ['C:\\path\\program.exe', 'D:\\path\\payday.exe', 'C:\\path\\map_builder.exe']
+EXPECTED_SHORTCUTS: list[str] = [
+    'C:\\path\\program.exe', 'D:\\path\\payday.exe', 'C:\\path\\map_builder.exe'
+]
 
 @pytest.fixture(scope='module')
 def create_ToolJSON(createTemp_externalShortcuts_ini: str) -> ToolJSON:

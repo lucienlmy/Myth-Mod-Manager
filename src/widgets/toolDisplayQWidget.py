@@ -1,8 +1,9 @@
 import os
 import logging
 
+from PySide6.QtGui import QIcon
 import PySide6.QtWidgets as qtw
-from PySide6.QtCore import Qt as qt, Signal, QCoreApplication as qapp, Slot
+from PySide6.QtCore import QUrl, Qt as qt, Signal, QCoreApplication as qapp, Slot
 
 from src.widgets.QDialog.announcementQDialog import Notice
 from src.widgets.QDialog.deleteWarningQDialog import Confirmation
@@ -15,13 +16,13 @@ class ExternalTool(qtw.QFrame):
     def __init__(self, toolURL: str) -> None:
         super().__init__()
         logging.getLogger(__name__)
-        self.toolURL = toolURL
+        self.toolURL: str = toolURL
 
         self.setMaximumSize(256, 256)
 
         self.setObjectName('externaltool')
 
-        style = self.style()
+        style: qtw.QStyle = self.style()
 
         self.vlayout = qtw.QVBoxLayout()
 
@@ -30,13 +31,13 @@ class ExternalTool(qtw.QFrame):
         optionsFrameLayout = qtw.QHBoxLayout()
         optionsFrameLayout.setAlignment(qt.AlignmentFlag.AlignRight)
 
-        editIcon = style.standardIcon(style.StandardPixmap.SP_DirLinkIcon)
+        editIcon: QIcon = style.standardIcon(style.StandardPixmap.SP_DirLinkIcon)
 
         self.editToolButton = qtw.QPushButton(icon=editIcon, parent=self.optionsFrame)
         self.editToolButton.setSizePolicy(qtw.QSizePolicy.Policy.Fixed, qtw.QSizePolicy.Policy.Fixed)
         self.editToolButton.pressed.connect(self.editToolURL)
 
-        deleteIcon = style.standardIcon(style.StandardPixmap.SP_DialogDiscardButton)
+        deleteIcon: QIcon = style.standardIcon(style.StandardPixmap.SP_DialogDiscardButton)
 
         self.deleteToolButton = qtw.QPushButton(icon=deleteIcon, parent=self.optionsFrame)
         self.deleteToolButton.setSizePolicy(qtw.QSizePolicy.Policy.Fixed, qtw.QSizePolicy.Policy.Fixed)
@@ -70,14 +71,16 @@ class ExternalTool(qtw.QFrame):
     @Slot()
     def editToolURL(self) -> None:
         dialog = qtw.QFileDialog()
-        new_url = dialog.getOpenFileUrl(None, 
-                                       caption=qapp.translate('ExternalTool', 'Select new external tool'),
-                                       filter=qapp.translate('ExternalTool', 'Executables') + '(*.exe *.bat *.sh);;Any (*)')
+        new_url: tuple[QUrl, str] = dialog.getOpenFileUrl(
+            None, 
+            caption=qapp.translate('ExternalTool', 'Select new external tool'),
+            filter=qapp.translate('ExternalTool', 'Executables') + '(*.exe *.bat *.sh);;Any (*)'
+        )
         
-        new_urlLocalFile = new_url[0].toLocalFile()
+        new_urlLocalFile: str = new_url[0].toLocalFile()
 
         if os.path.isfile(new_urlLocalFile):
-            old_url = self.toolURL
+            old_url: str = self.toolURL
             self.toolURL = new_urlLocalFile
 
             self.startToolButton.setText(self.__trimBasename(self.toolURL))

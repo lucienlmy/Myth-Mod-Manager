@@ -5,7 +5,7 @@ import os
 class JSONParser():
     file: dict = None
     def __init__(self, path: str = '', default: dict = {}) -> None:
-        self.path = path
+        self.path: str = path
         self.default = default
         try:
             self.loadJSON()

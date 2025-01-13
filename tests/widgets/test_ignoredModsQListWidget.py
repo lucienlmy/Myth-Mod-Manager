@@ -1,14 +1,13 @@
 import pytest
-from pytestqt.qtbot import QtBot
+from typing import Generator
 
 from src.widgets.ignoredModsQListWidget import IgnoredMods
 
 @pytest.fixture(scope='module')
-def create_ignoredModList(createTemp_Mod_ini: str) -> IgnoredMods:
-    return IgnoredMods(savePath=createTemp_Mod_ini)
-
-def test_ignoredModList(qtbot: QtBot, create_ignoredModList: IgnoredMods) -> None:
-    qtbot.addWidget(create_ignoredModList)
+def create_ignoredModList(createTemp_Mod_ini: str) -> Generator:
+    widget = IgnoredMods(savePath=createTemp_Mod_ini)
+    yield widget
+    widget.deleteLater()
 
 def test_refreshList(create_ignoredModList: IgnoredMods) -> None:
     

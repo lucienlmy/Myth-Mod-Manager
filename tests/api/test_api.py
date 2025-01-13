@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as et
 import tempfile
 import os
+from typing import Generator
 
 import pytest
 from semantic_version import Version
@@ -24,10 +25,10 @@ MOCK_DATA_VERSIONS = (
 )
 
 @pytest.fixture(scope='function')
-def create_testXML() -> str:
+def create_testXML() -> Generator:
     with tempfile.TemporaryDirectory() as tmp_dir:
 
-        with open(os.path.join(tmp_dir, 'main.xml'), 'w') as tmp:
+        with open(os.path.join(tmp_dir, 'main.xml'), 'w') as _tmp:
             pass
 
         yield tmp_dir

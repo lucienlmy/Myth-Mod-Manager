@@ -3,6 +3,8 @@ import shutil
 
 import pytest
 
+from PySide6.QtCore import QMutex
+
 from src.threaded.unZipMod import UnZipMod
 from src.constant_vars import ModType
 from src.getPath import Pathing
@@ -15,18 +17,22 @@ def test_thread(create_mod_dirs: str, createTemp_Config_ini: str, createTemp_Mod
     parser.setGamepath(create_mod_dirs)
     parser.writeData()
 
-    zip_path = os.path.join(create_mod_dirs, 'zip')
+    zip_path: str = os.path.join(create_mod_dirs, 'zip')
     os.mkdir(zip_path)
     shutil.make_archive(zip_path, 'zip')
 
-    url = os.path.join(create_mod_dirs, 'zip.zip')
+    url: str = os.path.join(create_mod_dirs, 'zip.zip')
 
+    mutex = QMutex()
     worker = UnZipMod((url, ModType.mods))
     worker.optionsManager = parser
     worker.saveManager = Save(createTemp_Mod_ini)
+    worker.mutex = mutex
 
     worker.p = Pathing(createTemp_Config_ini)
 
     worker.start()
 
     assert os.path.isdir(os.path.join(create_mod_dirs, 'mods', 'zip'))
+
+    worker.deleteLater()

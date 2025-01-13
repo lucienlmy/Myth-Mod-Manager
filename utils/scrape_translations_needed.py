@@ -13,7 +13,7 @@ def scrape_translations_needed(*args) -> None:
 
     # Update translation Files with current code
     py_file_paths: list[str] = []
-    ts_file_paths = glob.glob('.\\translations\\*.ts')
+    ts_file_paths: list[str] = glob.glob('.\\translations\\*.ts')
 
     # Put together python script paths
     for item in glob.glob('.\\src\\**', recursive=True):
@@ -36,14 +36,14 @@ def scrape_translations_needed(*args) -> None:
 
         # Find missing translations
         for ts_file in ts_file_paths:
-            key = os.path.basename(ts_file).split('.')[0]
+            key: str = os.path.basename(ts_file).split('.')[0]
             messages_to_translate[key] = []
-            f = xml.etree.ElementTree.parse(ts_file)
+            f: xml.etree.ElementTree.ElementTree = xml.etree.ElementTree.parse(ts_file)
 
             for tag in f.findall('context'):
                 for tag in tag.findall('message'):
-                    source = tag.find('source')
-                    translation = tag.find('translation')
+                    source: xml.etree.ElementTree.Element | None = tag.find('source')
+                    translation: xml.etree.ElementTree.Element | None = tag.find('translation')
                     if source is not None and translation.get('type') is not None:
                         messages_to_translate[key].append(*source.itertext())
 
@@ -52,5 +52,6 @@ def scrape_translations_needed(*args) -> None:
             if messages_to_translate.get(key):
                 with open(f'translation_needed_{key}.txt', 'w+') as f:
                     f.write('\n'.join(messages_to_translate[key]))
+                    print("Wrote", key, 'at', os.path.abspath(key))
 
 scrape_translations_needed(*sys.argv[1:])

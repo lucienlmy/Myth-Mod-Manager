@@ -57,6 +57,10 @@ IS_SCRIPT = not getattr(sys, 'frozen', False)
 # Root Path
 ROOT_PATH = os.path.abspath(os.getcwd())
 
+# Logs Folder Path
+LOGS_PATH = os.path.join(ROOT_PATH, 'logs')
+MAX_LOGS = 10
+
 # Lang Folder Path
 LANG_FOLDER_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'lang')
 
@@ -72,7 +76,6 @@ START_PAYDAY = 'runGame.bat'
 OLD_EXE = 'Myth Mod Manager.exe (Old)' if sys.platform.startswith('win') else 'Myth Mod Manager (old)'
 DISABLED_MODS = 'disabled-mods'
 BACKUP_MODS = 'backup mods'
-LOG = 'log.txt'
 
 # Graphics names
 MODWORKSHOP_LOGO_W = 'mws_logo_white.svg'
@@ -101,4 +104,4 @@ LIGHT = 'light'
 # Program Info
 PROGRAM_NAME = 'Myth Mod Manager'
 
-VERSION = semantic_version.Version(major=1, minor=6, patch=1)
+VERSION = semantic_version.Version(major=1, minor=7, patch=0)

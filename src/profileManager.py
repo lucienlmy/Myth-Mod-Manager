@@ -49,7 +49,7 @@ class ProfileManager(JSONParser):
     def addMod(self, profile: str, *mods: str) -> None:
         currentMods: list[str] = self.getMods(profile)
 
-        newMods = [x for x in mods]
+        newMods: list[str] = [x for x in mods]
         
 
         updatedMods = list(set(currentMods + newMods))

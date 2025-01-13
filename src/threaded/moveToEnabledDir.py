@@ -12,35 +12,40 @@ class MoveToEnabledModDir(Worker):
     def __init__(self, *mods: str, optionsPath: str = OPTIONS_CONFIG, savePath: str = MOD_CONFIG) -> None:
         super().__init__(optionsPath=optionsPath, savePath=savePath)
 
-        self.mods = mods
+        self.mods: tuple[str, ...] = mods
+        self.mods_moved: list[tuple[str, str]] = []
 
     @Slot()
     def start(self) -> None:
         '''Returns a mod to their respective directory'''
 
-        try:
+        self.setTotalProgress.emit(len(self.mods))
 
-            self.setTotalProgress.emit(len(self.mods))
+        disabledModsPath: str = self.optionsManager.getDispath()
 
-            disabledModsPath = self.optionsManager.getDispath()
+        for mod in self.mods:
 
-            for mod in self.mods:
+            self.setCurrentProgress.emit(1, qapp.translate('MoveToEnabledModDir', 'Enabling') + f' {mod}')
 
-                self.cancelCheck()
+            modPath: str = os.path.join(disabledModsPath, mod)
 
-                self.setCurrentProgress.emit(1, qapp.translate('MoveToEnabledModDir', 'Enabling') + f' {mod}')
+            if os.path.isdir(modPath):
 
-                modPath = os.path.join(disabledModsPath, mod)
+                modDestPath: list[str] | str = self.p.mod(self.saveManager.getType(mod), mod)
 
-                if os.path.isdir(modPath):
+                self.move(modPath, modDestPath)
+                self.mods_moved.append((modPath, modDestPath))
+            else:
+                logging.warning('%s was not found in:\n%s\nIgnoring...', mod, disabledModsPath)
 
-                    modDestPath = self.p.mod(self.saveManager.getType(mod), mod)
+            self.cancelCheck()
+            self.rest()
 
-                    self.move(modPath, modDestPath)
-                else:
-                    logging.warning('%s was not found in:\n%s\nIgnoring...', mod, disabledModsPath)
-            
-            self.succeeded.emit()
-
-        except Exception as e:
-            self.error.emit(qapp.translate('MoveToEnabledModDir', 'An error occured while enabling a mod:') + f'\n{e}')
+        self.succeeded.emit()
+    
+    def onCancel(self) -> None:
+        self.setTotalProgress.emit(len(self.mods_moved))
+        for modPaths in self.mods_moved:
+            self.setCurrentProgress.emit(1, qapp.translate('MoveToEnabledDir', 'Moving') + f' {os.path.basename(modPaths[0])}')
+            self.move(modPaths[1], modPaths[0])
+            self.rest()

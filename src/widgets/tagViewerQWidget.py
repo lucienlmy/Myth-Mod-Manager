@@ -18,7 +18,7 @@ class TagViewer(qtw.QWidget):
     tagChanged = Signal(str, tuple)
     def __init__(self, managerTable: ModListWidget = None) -> None:
         super().__init__()
-        self.managerTable = managerTable
+        self.managerTable: ModListWidget = managerTable
 
         self.setWindowIcon(qtg.QIcon(ICON))
 

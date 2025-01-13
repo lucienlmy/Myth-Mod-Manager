@@ -2,6 +2,7 @@ import os
 import subprocess
 import logging
 import sys
+from typing import List
 
 import PySide6.QtWidgets as qtw
 from PySide6.QtCore import Qt as qt, QCoreApplication as qapp, Slot
@@ -64,10 +65,10 @@ class ModManager(qtw.QWidget):
         self.applyStaticText()
         self.updateModCount()
 
-        self.refresh.clicked.connect(lambda: self.modsTable.refreshMods(True))
-        self.openGameDir.clicked.connect(lambda: errorChecking.startFile(self.optionsManager.getGamepath()))
+        self.refresh.clicked.connect(self.onRefreshClicked)
+        self.openGameDir.clicked.connect(self.onOpenGameDirClicked)
         self.startGame.clicked.connect(self.startPayday)
-        self.search.textChanged.connect(lambda x: self.modsTable.search(x))
+        self.search.textChanged.connect(self.modsTable.search)
         self.modsTable.itemChanged.connect(self.updateModCount)
 
         # Shortcuts
@@ -79,6 +80,14 @@ class ModManager(qtw.QWidget):
 
         self.setLayout(layout)
     
+    @Slot()
+    def onRefreshClicked(self) -> None:
+        self.modsTable.refreshMods(True)
+    
+    @Slot()
+    def onOpenGameDirClicked(self) -> None:
+        errorChecking.startFile(self.optionsManager.getGamepath())
+
     def applyStaticText(self) -> None:
         self.refresh.setText(qapp.translate("ModManager", "Refresh Mods"))
         self.openGameDir.setText(qapp.translate("ModManager", 'Open Game Directory'))
@@ -110,7 +119,7 @@ class ModManager(qtw.QWidget):
                 gameExe = 'payday2_win32_release.exe'
 
                 # TODO: Permission error is raised without shell=True, can this be avoided?
-                cmd = subprocess.run([gamePath[0:2].upper(), '&&', 'cd', gamePath, '&&', gameExe], shell=True)
+                cmd: subprocess.CompletedProcess[bytes] = subprocess.run([gamePath[0:2].upper(), '&&', 'cd', gamePath, '&&', gameExe], shell=True)
                 cmd.check_returncode()
             else:
                 gameExe = 'payday2_release'
@@ -126,7 +135,7 @@ class ModManager(qtw.QWidget):
 
     @Slot()
     def deselectAllShortcut(self) -> None:
-        selectedItems = self.modsTable.selectedItems()
+        selectedItems: List[qtw.QTableWidgetItem] = self.modsTable.selectedItems()
         if selectedItems:
             for item in selectedItems:
                 item.setSelected(False)

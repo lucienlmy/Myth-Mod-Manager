@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import List
 
 import PySide6.QtGui as qtg
 import PySide6.QtWidgets as qtw
@@ -49,9 +50,9 @@ class ModListWidget(qtw.QTableWidget):
         self.setColumnWidth(2, 100)
         self.setColumnWidth(3, 100)
 
-        horizontalHeader = self.horizontalHeader()
+        horizontalHeader: qtw.QHeaderView = self.horizontalHeader()
 
-        horizontalHeader.sectionClicked.connect(lambda x: self.sort(x))
+        horizontalHeader.sectionClicked.connect(self.sort)
         horizontalHeader.setHighlightSections(False)
 
         horizontalHeader.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
@@ -59,7 +60,10 @@ class ModListWidget(qtw.QTableWidget):
         horizontalHeader.setSectionResizeMode(2, qtw.QHeaderView.ResizeMode.ResizeToContents)
         horizontalHeader.setSectionResizeMode(3, qtw.QHeaderView.ResizeMode.Interactive)
 
-        self.sortState = {'col' : 0, 'ascending': qt.SortOrder.AscendingOrder}
+        self.sortState: dict[str:int | qt.SortOrder] = {
+            'col' : 0,
+            'ascending': qt.SortOrder.AscendingOrder
+        }
 
         self.setHorizontalScrollBarPolicy(qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
@@ -69,7 +73,7 @@ class ModListWidget(qtw.QTableWidget):
         self.tagViewer = None
 
         self.applyStaticText()
-    
+
     def applyStaticText(self) -> None:
         self.setHorizontalHeaderLabels((
             qapp.translate("ModListWidget", 'Name'),
@@ -79,8 +83,8 @@ class ModListWidget(qtw.QTableWidget):
         )
 
         # Update Enabled Item Tags
-        enabled_text = self.horizontalHeaderItem(2).text()
-        disabled_text = qapp.translate("ModListWidget", 'Disabled')
+        enabled_text: str = self.horizontalHeaderItem(2).text()
+        disabled_text: str = qapp.translate("ModListWidget", 'Disabled')
 
         for i, item in enumerate(self.getEnabledItems()):
             if self.saveManager.getEnabled(self.getNameItem(i).text()):
@@ -129,10 +133,12 @@ class ModListWidget(qtw.QTableWidget):
 
         if header == self.sortState['col'] and changeAscending:
 
-            inverseDict = {qt.SortOrder.AscendingOrder : qt.SortOrder.DescendingOrder, 
-                           qt.SortOrder.DescendingOrder : qt.SortOrder.AscendingOrder}
+            inverseDict: dict[qt.SortOrder, qt.SortOrder] = {
+                qt.SortOrder.AscendingOrder : qt.SortOrder.DescendingOrder, 
+                qt.SortOrder.DescendingOrder : qt.SortOrder.AscendingOrder
+            }
 
-            currentSort = self.sortState['ascending']
+            currentSort: qt.SortOrder = self.sortState['ascending']
 
             self.sortState['ascending'] = inverseDict[currentSort]
 
@@ -165,7 +171,7 @@ class ModListWidget(qtw.QTableWidget):
 
                 case 'name':
                     item = qtw.QTableWidgetItem(value)
-                    tags = kwargs.get('tags')
+                    tags: str | ModType | bool | List[str] | None = kwargs.get('tags')
                     if tags is None:
                         tags = []
                     item.setData(ModRole.tags, tuple(tags))
@@ -184,7 +190,7 @@ class ModListWidget(qtw.QTableWidget):
 
                 case 'enabled': # The key to this value should be a boolean
 
-                    value = qapp.translate('ModListWidget', 'Enabled') if value else qapp.translate('ModListWidget', 'Disabled')
+                    value: str = qapp.translate('ModListWidget', 'Enabled') if value else qapp.translate('ModListWidget', 'Disabled')
                     self.setItem(self.rowCount() - 1, 2, qtw.QTableWidgetItem(value))
                 
                 case 'version':
@@ -205,18 +211,18 @@ class ModListWidget(qtw.QTableWidget):
         iteration
         '''
 
-        items = self.getSelectedNameItems()
+        items: List[qtw.QTableWidgetItem] = self.getSelectedNameItems()
 
-        disabledModDir = self.optionsManager.getDispath()
+        disabledModDir: str = self.optionsManager.getDispath()
 
         startFileMover = ProgressWidget(MoveToDisabledDir(*[x.text() for x in items]))
         startFileMover.exec()
 
         for item in items:
 
-            row = item.row()
+            row: int = item.row()
 
-            modName = item.text()
+            modName: str = item.text()
 
             if os.path.isdir(os.path.join(disabledModDir, modName)):
 
@@ -235,20 +241,22 @@ class ModListWidget(qtw.QTableWidget):
         and the mod assosiated with that row from the user's PC
         '''
 
-        warning = Confirmation(title='Deletion Confirmation', 
-                               body='Are you sure you want to delete these mod(s) from your computer?\n(This action cannot be reversed)')
+        warning = Confirmation(
+            title='Deletion Confirmation', 
+            body='Are you sure you want to delete these mod(s) from your computer?\n(The mods will be placed in the recycle bin)'
+        )
         warning.exec()
 
         if warning.result():
 
-            items = self.getSelectedNameItems()
+            items: List[qtw.QTableWidgetItem] = self.getSelectedNameItems()
 
             startFileMover = ProgressWidget(DeleteMod(*[x.text() for x in items]))
             startFileMover.exec()
 
             for item in items:
 
-                row = item.row()
+                row: int = item.row()
 
                 self.removeRow(row)
             
@@ -259,16 +267,16 @@ class ModListWidget(qtw.QTableWidget):
     def setItemEnabled(self) -> None:
         '''Sets one or more mods to be enabled in MOD_CONFIG and in the GUI'''
 
-        items = self.getSelectedNameItems()
+        items: List[qtw.QTableWidgetItem] = self.getSelectedNameItems()
 
         startFileMover = ProgressWidget(MoveToEnabledModDir(*[x.text() for x in items]))
         startFileMover.exec()
 
         for item in items:
 
-            row = item.row()
+            row: int = item.row()
 
-            modName = item.text()
+            modName: str = item.text()
             modType = ModType(self.getTypeItem(row).text())
 
             self.p.mod(modType, modName)
@@ -298,7 +306,7 @@ class ModListWidget(qtw.QTableWidget):
         # Save mods into .ini
         self.saveManager.addMods((mods_override, ModType.mods_override), (mods, ModType.mods), (maps, ModType.maps))
 
-        disModFolder = self.optionsManager.getDispath()
+        disModFolder: str = self.optionsManager.getDispath()
 
         # Add mods to the table widget
         for mod in (x for x in mods_override + mods + maps):
@@ -307,14 +315,15 @@ class ModListWidget(qtw.QTableWidget):
             if self.saveManager.getIgnored(mod):
                 continue
 
-            type = self.saveManager.getType(mod)
-            isEnabled = not os.path.isdir(os.path.join(disModFolder, mod))
-            modPath = self.p.mod(type, mod) if isEnabled else os.path.join(disModFolder, mod)
+            type: ModType | None = self.saveManager.getType(mod)
+            isEnabled: bool = not os.path.isdir(os.path.join(disModFolder, mod))
+            modPath: List[str] | str = self.p.mod(type, mod) if isEnabled else os.path.join(disModFolder, mod)
             version = str(findModVersion(modPath))
-            tags = self.saveManager.getTags(mod)
+            tags: List[str] = self.saveManager.getTags(mod)
 
-            assetID = self.saveManager.getModworkshopAssetID(mod)
+            assetID: str = self.saveManager.getModworkshopAssetID(mod)
 
+            # Empty string
             if not assetID:
                 assetID = findModworkshopAssetID(modPath)
 
@@ -351,16 +360,16 @@ class ModListWidget(qtw.QTableWidget):
         maps: list[str] = []
 
         # Mod Folder Paths
-        modsPath = self.p.mods()
-        mod_overridePath = self.p.mod_overrides()
-        maps_path = self.p.maps()
-        disabledModsPath = self.optionsManager.getDispath()
+        modsPath: str = self.p.mods()
+        mod_overridePath: str = self.p.mod_overrides()
+        maps_path: str = self.p.maps()
+        disabledModsPath: str = self.optionsManager.getDispath()
 
         # Mod Folder Contents
-        modsFolder = os.listdir(modsPath)
-        mod_overrideFolder = os.listdir(mod_overridePath)
-        mapsFolder = os.listdir(maps_path)
-        disabledModsFolder = os.listdir(disabledModsPath)
+        modsFolder: List[str] = os.listdir(modsPath)
+        mod_overrideFolder: List[str] = os.listdir(mod_overridePath)
+        mapsFolder: List[str] = os.listdir(maps_path)
+        disabledModsFolder: List[str] = os.listdir(disabledModsPath)
 
         # Mods Folder
         if os.path.exists(modsPath):
@@ -393,7 +402,7 @@ class ModListWidget(qtw.QTableWidget):
 
             for mod in mapsFolder:
 
-                modPath = os.path.join(maps_path, mod)
+                modPath: str = os.path.join(maps_path, mod)
 
                 if errorChecking.getFileType(modPath) == 'dir':
 
@@ -408,7 +417,7 @@ class ModListWidget(qtw.QTableWidget):
 
                 if self.saveManager.hasMod(mod):
 
-                    modType = self.saveManager.getType(mod)
+                    modType: ModType | None = self.saveManager.getType(mod)
                     
                     if modType == ModType.mods:
 
@@ -429,14 +438,14 @@ class ModListWidget(qtw.QTableWidget):
     def visitModPage(self) -> None:
 
         if not len(self.getSelectedNameItems()) <= 0:
-            selectedItem = self.getSelectedNameItems()[0]
+            selectedItem: qtw.QTableWidgetItem = self.getSelectedNameItems()[0]
 
-            assetID = self.saveManager.getModworkshopAssetID(selectedItem.text())
+            assetID: str = self.saveManager.getModworkshopAssetID(selectedItem.text())
 
             errorChecking.openWebPage(f'https://modworkshop.net/mod/{assetID}')
     
     def checkModUpdate(self) -> None:
-        notice_title = qapp.translate("ModListWidget", 'Mod Update Check Results')
+        notice_title: str = qapp.translate("ModListWidget", 'Mod Update Check Results')
         @Slot(str)
         def updateDetected(newVersion: str) -> None:
             Notice(
@@ -447,10 +456,10 @@ class ModListWidget(qtw.QTableWidget):
         def uptoDate() -> None:
             Notice(modName + ' ' + qapp.translate("ModListWidget", 'is up to date'), notice_title).exec()
 
-        item = self.getSelectedNameItems()[0]
-        modName = self.getNameItem(self.row(item)).text()
-        modVersion = self.getVersionItem(self.row(item)).text()
-        assetID = self.saveManager.getModworkshopAssetID(modName)
+        item: qtw.QTableWidgetItem = self.getSelectedNameItems()[0]
+        modName: str = self.getNameItem(self.row(item)).text()
+        modVersion: str = self.getVersionItem(self.row(item)).text()
+        assetID: str = self.saveManager.getModworkshopAssetID(modName)
 
         if not assetID:
             logging.warning('ModListWidget.checkModUpdate(), %s is missing an assetID', modName)
@@ -458,15 +467,16 @@ class ModListWidget(qtw.QTableWidget):
 
         self.api = checkModUpdate(assetID, modVersion)
         self.api.upToDate.connect(uptoDate)
-        self.api.updateDetected.connect(lambda x: updateDetected(x))
+        self.api.updateDetected.connect(updateDetected)
 
     def openModDir(self) -> None:
         if not len(self.getSelectedNameItems()) <= 0:
-            selectedItem = self.getSelectedNameItems()[0]
+            selectedItem: qtw.QTableWidgetItem = self.getSelectedNameItems()[0]
 
-            modName = self.getNameItem(self.row(selectedItem)).text()
-            modType = self.getTypeItem(self.row(selectedItem)).text()
+            modName: str = self.getNameItem(self.row(selectedItem)).text()
+            modType: str = self.getTypeItem(self.row(selectedItem)).text()
 
+            path: str | list[str]
             if not self.saveManager.getEnabled(modName):
                 path = os.path.join(self.optionsManager.getDispath(), modName)
             else:
@@ -476,9 +486,9 @@ class ModListWidget(qtw.QTableWidget):
                 errorChecking.startFile(path)
 
     def hideMod(self) -> None:
-        items = self.getSelectedNameItems()
+        items: List[qtw.QTableWidgetItem] = self.getSelectedNameItems()
         for item in items:
-            modName = item.text()
+            modName: str = item.text()
             self.saveManager.setIgnored(modName, True)
             self.removeRow(item.row())
         
@@ -494,9 +504,9 @@ class ModListWidget(qtw.QTableWidget):
     
     @Slot(str, tuple)
     def updateTags(self, mod: str, tags: tuple[str]) -> None:
-        items = self.findItems(mod, qt.MatchFlag.MatchFixedString)
+        items: List[qtw.QTableWidgetItem] = self.findItems(mod, qt.MatchFlag.MatchFixedString)
         if items:
-            item = items[0]
+            item: qtw.QTableWidgetItem = items[0]
             item.setData(ModRole.tags, sorted(tags))
 
     @Slot(str)
@@ -504,15 +514,18 @@ class ModListWidget(qtw.QTableWidget):
         searchedTags = None
 
         if input.startswith('tag:') and len(input) > 4:
-            splitStr = input.split(' ')
+            splitStr: List[str] = input.split(' ')
             input = ' '.join(splitStr[1:])
-            searchedTags = splitStr[0][4:].split(',')
+            searchedTags: List[str] = splitStr[0][4:].split(',')
 
-        results = self.findItems(f'{input}*', qt.MatchFlag.MatchWildcard | qt.MatchFlag.MatchExactly)
+        results: List[qtw.QTableWidgetItem] = self.findItems(
+            f'{input}*',
+            qt.MatchFlag.MatchWildcard | qt.MatchFlag.MatchExactly
+        )
 
         for i in range(0, self.rowCount() + 1):
 
-            item = self.item(i, 0)
+            item: qtw.QTableWidgetItem | None = self.item(i, 0)
             if item is not None:
                 modTags: tuple[str] | None = item.data(ModRole.tags)
 
@@ -533,10 +546,13 @@ class ModListWidget(qtw.QTableWidget):
 
         newIcon = MODWORKSHOP_LOGO_W if mode == LIGHT else MODWORKSHOP_LOGO_B
 
-        reverseDict = {MODWORKSHOP_LOGO_B : MODWORKSHOP_LOGO_W, MODWORKSHOP_LOGO_W : MODWORKSHOP_LOGO_B}
+        reverseDict: dict[str, str] = {
+            MODWORKSHOP_LOGO_B : MODWORKSHOP_LOGO_W,
+            MODWORKSHOP_LOGO_W : MODWORKSHOP_LOGO_B
+        }
 
         for i in range(0, self.rowCount() - 1):
-            item = self.getNameItem(i)
+            item: qtw.QTableWidgetItem = self.getNameItem(i)
 
             if not item.icon().isNull():
                 item.setIcon(qtg.QIcon(os.path.join(UI_GRAPHICS_PATH, reverseDict[newIcon])))
@@ -554,7 +570,7 @@ class ModListWidget(qtw.QTableWidget):
             return
 
         # Dictionary holding the destination for each mod
-        dict_ = notice.typeDict
+        dict_: dict = notice.typeDict
 
         # Combine the mod location and URL into a Tuple
         if dirs:
@@ -586,7 +602,7 @@ class ModListWidget(qtw.QTableWidget):
         if event.button() == qt.MouseButton.RightButton:
             
             # Will return None if there are no mods causing a traceback
-            tableWidgetItem = self.itemAt(event.pos())
+            tableWidgetItem: qtw.QTableWidgetItem | None = self.itemAt(event.pos())
 
             if tableWidgetItem is not None:
 

@@ -26,10 +26,10 @@ class Confirmation(Dialog):
     
     @Slot()
     def accept(self) -> None:
-        self.setResult(1)
+        self.setResult(qtw.QDialog.DialogCode.Accepted)
         return super().accept()
     
     @Slot()
     def reject(self) -> None:
-        self.setResult(0)
+        self.setResult(qtw.QDialog.DialogCode.Rejected)
         return super().reject()

@@ -28,7 +28,7 @@ class MainWindow(qtw.QMainWindow):
         self.setMinimumSize(800, 800)
         self.resize(self.optionsManager.getWindowSize())
 
-        self.app = app
+        self.app: qapp | None = app
 
         self.tab = qtw.QTabWidget(self)
 
@@ -39,8 +39,8 @@ class MainWindow(qtw.QMainWindow):
         self.about = About()
 
         self.options.ignoredMods.ignoredModsListWidget.itemsRemoved.connect(self.manager.modsTable.refreshMods)
-        self.options.themeSwitched.connect(lambda x: self.manager.modsTable.swapIcons(x))
-        self.options.themeSwitched.connect(lambda x: self.about.updateIcons(x))
+        self.options.themeSwitched.connect(self.manager.modsTable.swapIcons)
+        self.options.themeSwitched.connect(self.about.updateIcons)
 
         for page in (
                         (self.manager, ''),
@@ -58,10 +58,10 @@ class MainWindow(qtw.QMainWindow):
 
         if self.optionsManager.getMMMUpdateAlert():
             self.run_checkUpdate = checkUpdate()
-            self.run_checkUpdate.updateDetected.connect(lambda x, y: self.updateDetected(x, y))
+            self.run_checkUpdate.updateDetected.connect(self.updateDetected)
 
     def applyStaticText(self) -> None:
-        tab = self.tab.tabBar()
+        tab: qtw.QTabBar = self.tab.tabBar()
         tab.setTabText(0, qapp.translate('MainWindow', 'Manager'))
         tab.setTabText(1, qapp.translate('MainWindow', 'Profiles'))
         tab.setTabText(2, qapp.translate('MainWindow', 'Tools'))
