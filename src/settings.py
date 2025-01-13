@@ -65,7 +65,7 @@ class Options(qtw.QWidget):
             'Misc'         : self.optionsMisc
         }
 
-        self.optionChanged = {k:False for k in OptionKeys.all_keys()}
+        self.optionChanged: dict[str, bool] = {k:False for k in OptionKeys.all_keys()}
 
         sectionKeys = list(self.sections.keys())
 
@@ -169,14 +169,34 @@ class Options(qtw.QWidget):
             old_path: str = self.optionsManager.getDispath()
             new_path: str = self.optionsGeneral.disabledModDir.text()
 
+            is_dir: bool = os.path.isdir(new_path)
+            is_abs: bool = os.path.isabs(new_path)
+            is_valid: bool = is_dir and is_abs
+
             progressWidget = ProgressWidget(NewDisabledDir(old_path, new_path))
-            progressWidget.exec()
+
+            if is_valid:
+                progressWidget.exec()
+            else:
+                progressWidget.mode.cancel = True
+                Notice(
+                    'Something went wrong applying new disabled mods folder, check logs for more details after closing this window',
+                    'Could not change disabled mods folder'
+                ).exec()
 
             if not progressWidget.mode.cancel:
                 self.optionsManager.setDispath(new_path)
             else:
                 # Revert text
                 self.optionsGeneral.disabledModDir.setText(old_path)
+            
+            logging.info(
+                'Changing disabled mods folder from %s to %s\nIs it a directory? %s\n Is it an absolute path? %s',
+                old_path,
+                new_path,
+                is_dir,
+                is_abs
+            )
 
 
         if self.optionChanged.get(OptionKeys.color_theme):
@@ -194,8 +214,8 @@ class Options(qtw.QWidget):
         if self.optionChanged.get(OptionKeys.lang):
             app: qtw.QApplication = qtw.QApplication.instance()
 
-            old_lang = self.optionsManager.getLang()
-            new_lang = language_string_to_code.get(self.optionsGeneral.language.currentText())
+            old_lang: str = self.optionsManager.getLang()
+            new_lang: str | None = language_string_to_code.get(self.optionsGeneral.language.currentText())
 
             translator: QTranslator = app.findChild(QTranslator)
 
