@@ -27,8 +27,6 @@ class ChangeModType(Worker):
         
         for mod in self.mods:
 
-            self.cancelCheck()
-
             modsDirPath: str = mod[0]
             ChosenDir: ModType = mod[1]
 
@@ -44,6 +42,9 @@ class ChangeModType(Worker):
                 self.move(modsDirPath, modDestPath)
                 self.mods_moved.append((modsDirPath, modDestPath))
 
+            self.cancelCheck()
+            self.rest()
+
         
         self.succeeded.emit()
     
@@ -52,4 +53,5 @@ class ChangeModType(Worker):
         for modPaths in self.mods_moved:
             self.setCurrentProgress.emit(1, qapp.translate('ChangeModType', 'Uninstalling') + f' {os.path.basename(modPaths[0])}')
             self.move(modPaths[1], modPaths[0])
+            self.rest()
 

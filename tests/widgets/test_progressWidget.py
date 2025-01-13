@@ -30,7 +30,7 @@ def test_cancel(create_progressWidget: ProgressWidget) -> None:
 
     create_progressWidget.cancel()
 
-    assert create_progressWidget.infoLabel.text() == 'Canceled, exit to continue'
+    assert create_progressWidget.infoLabel.text() == 'Canceled'
     assert create_progressWidget.mode.cancel
 
     create_progressWidget.cancel()

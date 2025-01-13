@@ -63,8 +63,6 @@ class BackupMods(Worker):
                 # Step 5: Copy each mod into the backup folder
                 for mod in (x for x in mods):
 
-                    self.cancelCheck()
-
                     self.setCurrentProgress.emit(1,
                         qapp.translate('BackupMods', 'Copying') +
                         f' {mod} ' +
@@ -92,6 +90,8 @@ class BackupMods(Worker):
                         shutil.rmtree(output)
 
                     shutil.copytree(src, output)
+                    self.cancelCheck()
+                    self.rest()
                 
                 self.cancelCheck()
 

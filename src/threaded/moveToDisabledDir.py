@@ -24,8 +24,6 @@ class MoveToDisabledDir(Worker):
 
         for mod in self.mods:
 
-            self.cancelCheck()
-
             self.setCurrentProgress.emit(1, qapp.translate('MoveToDisabledDir', 'Disabling') + f' {mod}')
 
             modDest: str = os.path.join(disabledModsPath, mod)
@@ -40,6 +38,9 @@ class MoveToDisabledDir(Worker):
             else:
                 logging.info('%s is already in the disabled directory', mod)
 
+            self.cancelCheck()
+            self.rest()
+
         self.succeeded.emit()
 
     
@@ -48,3 +49,4 @@ class MoveToDisabledDir(Worker):
         for modPaths in self.mods_moved:
             self.setCurrentProgress.emit(1, qapp.translate('MoveToDisabledDir', 'Moving') + f' {os.path.basename(modPaths[0])}')
             self.move(modPaths[1], modPaths[0])
+            self.rest()

@@ -65,10 +65,10 @@ class ModManager(qtw.QWidget):
         self.applyStaticText()
         self.updateModCount()
 
-        self.refresh.clicked.connect(lambda: self.modsTable.refreshMods(True))
-        self.openGameDir.clicked.connect(lambda: errorChecking.startFile(self.optionsManager.getGamepath()))
+        self.refresh.clicked.connect(self.onRefreshClicked)
+        self.openGameDir.clicked.connect(self.onOpenGameDirClicked)
         self.startGame.clicked.connect(self.startPayday)
-        self.search.textChanged.connect(lambda x: self.modsTable.search(x))
+        self.search.textChanged.connect(self.modsTable.search)
         self.modsTable.itemChanged.connect(self.updateModCount)
 
         # Shortcuts
@@ -80,6 +80,14 @@ class ModManager(qtw.QWidget):
 
         self.setLayout(layout)
     
+    @Slot()
+    def onRefreshClicked(self) -> None:
+        self.modsTable.refreshMods(True)
+    
+    @Slot()
+    def onOpenGameDirClicked(self) -> None:
+        errorChecking.startFile(self.optionsManager.getGamepath())
+
     def applyStaticText(self) -> None:
         self.refresh.setText(qapp.translate("ModManager", "Refresh Mods"))
         self.openGameDir.setText(qapp.translate("ModManager", 'Open Game Directory'))

@@ -64,9 +64,8 @@ def test_downloadStarted(create_dialog: updateDetected) -> None:
 
     assert create_dialog.downloadState is False
 
-    create_dialog.downloadStarted(101, total)
+    create_dialog.onDownloadProgress(101, total)
 
-    assert create_dialog.progressBar.maximum() == 1000
-    assert create_dialog.progressBar.value() == 100
-    assert create_dialog.lastIterBytes == 101
-    assert create_dialog.downloadState
+    assert create_dialog.progressBar.maximum() == 900
+    assert create_dialog.progressBar.value() == 101
+    assert create_dialog.downloadState is True

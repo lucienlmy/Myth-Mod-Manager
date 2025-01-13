@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import PySide6.QtGui as qtg
-from PySide6.QtCore import QCoreApplication as qapp
+from PySide6.QtCore import QCoreApplication as qapp, Slot
 
 from src.widgets.QMenu.QMenu import ModContextMenu
 
@@ -30,14 +30,14 @@ class ProfileMenu(ModContextMenu):
         self.modRemove = qtg.QAction(self)
         self.copyModsTo = qtg.QAction(self)
 
-        self.profileApply.triggered.connect(lambda: self.callFunc(self.qParent.applyProfileEvent))
-        self.profileAdd.triggered.connect(lambda: self.callFunc(self.qParent.menuAddProfile))
-        self.profileRemove.triggered.connect(lambda: self.callFunc(self.qParent.deleteProfile))
-        self.profileEdit.triggered.connect(lambda: self.callFunc(self.qParent.editProfileMenu))
-        self.profileCopy.triggered.connect(lambda: self.callFunc(self.qParent.copyProfile))
-        self.modAdd.triggered.connect(lambda: self.callFunc(self.qParent.modAddMenu))
-        self.modRemove.triggered.connect(lambda: self.callFunc(self.qParent.removeMods))
-        self.copyModsTo.triggered.connect(lambda: self.callFunc(self.qParent.copyModsToProfileMenu))
+        self.profileApply.triggered.connect(self.onProfileApplyTriggered)
+        self.profileAdd.triggered.connect(self.onProfileAddTriggered)
+        self.profileRemove.triggered.connect(self.onProfileRemoveTriggered)
+        self.profileEdit.triggered.connect(self.onProfileEditTriggered)
+        self.profileCopy.triggered.connect(self.onProfileCopyTriggered)
+        self.modAdd.triggered.connect(self.onModAddTriggered)
+        self.modRemove.triggered.connect(self.onModRemoveTriggered)
+        self.copyModsTo.triggered.connect(self.onCopyModsToTriggered)
 
         self.profileButtons: tuple = (
             self.profileApply, self.modAdd, self.profileAdd, self.profileRemove, self.profileEdit,
@@ -57,6 +57,38 @@ class ProfileMenu(ModContextMenu):
 
         self.applyStaticText()
 
+    @Slot()
+    def onProfileApplyTriggered(self) -> None:
+        self.callFunc(self.qParent.applyProfileEvent)
+
+    @Slot()
+    def onProfileAddTriggered(self) -> None:
+        self.callFunc(self.qParent.menuAddProfile)
+
+    @Slot()
+    def onProfileRemoveTriggered(self) -> None:
+        self.callFunc(self.qParent.deleteProfile)
+
+    @Slot()
+    def onProfileEditTriggered(self) -> None:
+        self.callFunc(self.qParent.editProfileMenu)
+
+    @Slot()
+    def onProfileCopyTriggered(self) -> None:
+        self.callFunc(self.qParent.copyProfile)
+
+    @Slot()
+    def onModAddTriggered(self) -> None:
+        self.callFunc(self.qParent.modAddMenu)
+
+    @Slot()
+    def onModRemoveTriggered(self) -> None:
+        self.callFunc(self.qParent.removeMods)
+
+    @Slot()
+    def onCopyModsToTriggered(self) -> None:
+        self.callFunc(self.qParent.copyModsToProfileMenu)
+
     def applyStaticText(self) -> None:
         self.profileApply.setText(qapp.translate('ProfileMenu', 'Apply Profile'))
         self.profileAdd.setText(qapp.translate('ProfileMenu', 'Add Profile'))
@@ -67,6 +99,7 @@ class ProfileMenu(ModContextMenu):
         self.modRemove.setText(qapp.translate('ProfileMenu', 'Remove Mod'))
         self.copyModsTo.setText(qapp.translate('ProfileMenu', 'Copy mod(s) to...'))
 
+    @Slot()
     def profileRightClicked(self) -> None:
         for action in self.actionsTuple:
             if action in self.profileButtons:
@@ -74,6 +107,7 @@ class ProfileMenu(ModContextMenu):
             else:
                 action.setVisible(False)
     
+    @Slot()
     def modRightClicked(self) -> None:
         for action in self.actionsTuple:
             if action in self.modButtons:
@@ -81,6 +115,7 @@ class ProfileMenu(ModContextMenu):
             else:
                 action.setVisible(False)
     
+    @Slot()
     def noneRightClicked(self) -> None:
         self.profileAdd.setVisible(True)
 

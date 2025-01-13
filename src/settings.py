@@ -71,7 +71,7 @@ class Options(qtw.QWidget):
 
         # List of sections
         self.sectionsList = qtw.QListWidget()
-        self.sectionsList.itemClicked.connect(lambda x: self.sectionsDisplay.setCurrentIndex(self.sectionsList.row(x)))
+        self.sectionsList.itemClicked.connect(self.onSectionsListItemClicked)
         self.sectionsList.setSizePolicy(qtw.QSizePolicy.Policy.Minimum, qtw.QSizePolicy.Policy.Preferred)
         self.sectionsList.setSelectionMode(qtw.QListWidget.SelectionMode.SingleSelection)
         self.sectionsList.addItems(sectionKeys)
@@ -128,8 +128,12 @@ class Options(qtw.QWidget):
         # Events
         for widget in tuple(self.sections.values()):
             widget: OptionsSectionBase
-            widget.pendingChanges.connect(lambda x, y: self.settingsChanged(x, y))
+            widget.pendingChanges.connect(self.settingsChanged)
     
+    @Slot(qtw.QListWidgetItem)
+    def onSectionsListItemClicked(self, item: qtw.QListWidgetItem) -> None:
+        self.sectionsDisplay.setCurrentIndex(self.sectionsList.row(item))
+
     def applyStaticText(self) -> None:
         self.applyButton.setText(qapp.translate('Options', 'Apply'))
         self.cancelButton.setText(qapp.translate('Options', 'Cancel'))
@@ -268,16 +272,16 @@ class OptionsGeneral(OptionsSectionBase):
         self.generalLayout.setRowWrapPolicy(qtw.QFormLayout.RowWrapPolicy.WrapAllRows)
 
         self.gameDir = qtw.QLineEdit(self)
-        self.gameDir.textChanged.connect(lambda x: self.gamePathChanged(x))
+        self.gameDir.textChanged.connect(self.gamePathChanged)
 
         self.disabledModDir = qtw.QLineEdit(self)
-        self.disabledModDir.textChanged.connect(lambda x: self.disPathChanged(repr(x)))
+        self.disabledModDir.textChanged.connect(self.disPathChanged)
 
         self.language = qtw.QComboBox(self)
         self.language.setEditable(False)
         self.language.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.language.addItems(list(language_string_to_code.keys()))
-        self.language.currentTextChanged.connect(lambda x: self.langChanged(language_string_to_code.get(x)))
+        self.language.currentTextChanged.connect(self.langChanged)
 
         gbLayout = qtw.QHBoxLayout()
 
@@ -358,27 +362,29 @@ class OptionsGeneral(OptionsSectionBase):
 
     @Slot(str)
     def gamePathChanged(self, path: str) -> None:
-        changed = True if path != self.optionsManager.getGamepath() else False
+        changed: bool = True if path != self.optionsManager.getGamepath() else False
         self.pendingChanges.emit(OptionKeys.game_path, changed)
     
     @Slot(str)
     def disPathChanged(self, path: str) -> None:
-        changed = True if path != self.optionsManager.getDispath() else False
+        path = repr(path)
+        changed: bool = True if path != self.optionsManager.getDispath() else False
         self.pendingChanges.emit(OptionKeys.dispath, changed)
     
     @Slot(str)
     def langChanged(self, lang: str) -> None:
-        changed = True if lang != self.optionsManager.getLang() else False
+        lang = language_string_to_code.get(lang)
+        changed: bool = True if lang != self.optionsManager.getLang() else False
         self.pendingChanges.emit(OptionKeys.lang, changed)
     
     @Slot(str)
     def themeChanged(self, theme: str) -> None:
-        changed = True if theme != self.optionsManager.getTheme() else False
+        changed: bool = True if theme != self.optionsManager.getTheme() else False
         self.pendingChanges.emit(OptionKeys.color_theme, changed)
     
     @Slot()
     def setUpdateAlert(self) -> None:
-        changed = True if self.updateAlertCheckbox.isChecked() != self.optionsManager.getMMMUpdateAlert() else False
+        changed: bool = True if self.updateAlertCheckbox.isChecked() != self.optionsManager.getMMMUpdateAlert() else False
         self.pendingChanges.emit(OptionKeys.mmm_update_alert, changed)
     
     def checkUpdate(self) -> None:
@@ -395,7 +401,7 @@ class OptionsGeneral(OptionsSectionBase):
         self.checkUpdateButton.setText(qapp.translate("OptionsGeneral", 'Checking...'))
 
         self.run_checkupdate = checkUpdate()
-        self.run_checkupdate.updateDetected.connect(lambda x, y: updateFound(x, y))
+        self.run_checkupdate.updateDetected.connect(updateFound)
         self.run_checkupdate.error.connect(lambda: self.checkUpdateButton.setText(qapp.translate("OptionsGeneral", 'Error: Check logs for more info')))
         self.run_checkupdate.upToDate.connect(lambda: self.checkUpdateButton.setText(qapp.translate("OptionsGeneral", 'Up to date!' ) + ' ^_^' ))
 

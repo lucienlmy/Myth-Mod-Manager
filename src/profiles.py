@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import PySide6.QtWidgets as qtw
 import PySide6.QtGui as qtg
 from PySide6.QtCore import QCoreApplication as qapp, Slot
@@ -29,7 +31,7 @@ class modProfile(qtw.QWidget):
         self.profileDisplay = ProfileList(self, profilePath)
 
         self.addProfileButton.clicked.connect(self.profileDisplay.menuAddProfile)
-        self.profileDisplay.applyProfile.connect(lambda x: self.applyMods(x))
+        self.profileDisplay.applyProfile.connect(self.applyMods)
 
         self.deselectAllShortcut = qtg.QShortcut(qtg.QKeySequence("Ctrl+D"), self)
         self.deselectAllShortcut.activated.connect(self.profileDisplay.unselectShortcut)
@@ -43,14 +45,23 @@ class modProfile(qtw.QWidget):
     def applyStaticText(self) -> None:
         self.addProfileButton.setText(qapp.translate('modProfile', 'Add Profile'))
 
-    @Slot(list)
-    def applyMods(self, mods: list[str]) -> None:
+    @Slot(tuple)
+    def applyMods(self, mods: tuple[str, ...]) -> None:
+        disabledMods: list[str] = [x for x in mods if errorChecking.isInstalled(x)]
+        enabledMods: list[str] = [x for x in self.saveManager.mods() if errorChecking.isInstalled(x) and x not in mods]
+        enableProgressWidget = ProgressWidget(MoveToEnabledModDir(*disabledMods))
+        disableProgressWidget = ProgressWidget(MoveToDisabledDir(*enabledMods))
 
-        enableMods = ProgressWidget(MoveToEnabledModDir(*[x for x in mods if errorChecking.isInstalled(x)]))
-        enableMods.exec()
+        notice = Notice('Canceled or something went wrong when applying the mod profile')
 
-        disableMods = ProgressWidget(MoveToDisabledDir(*[x for x in self.saveManager.mods() if errorChecking.isInstalled(x) and x not in mods]))
-        disableMods.exec()
+        logging.info('Enabled mods to be disabled:%s\nDisabled mods to be disabled:%s', enabledMods, disabledMods)
+        if enableProgressWidget.exec() != qtw.QDialog.DialogCode.Accepted:
+            notice.exec()
+            return
+
+        if disableProgressWidget.exec() != qtw.QDialog.DialogCode.Accepted:
+            notice.exec()
+            return
 
         # Refresh table so it is updated after all of this is done
         # TODO: Refactor to make this not loop through all widgets

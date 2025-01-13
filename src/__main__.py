@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 
 import PySide6.QtWidgets as qtw
 from PySide6.QtCore import QTranslator, QLocale
@@ -7,10 +8,30 @@ from PySide6.QtCore import QTranslator, QLocale
 from src.main_window import MainWindow
 from src.save import Save, OptionsManager
 from src.widgets.QDialog.gamepathQDialog import GamePathNotFound
-from src.constant_vars import VERSION, PROGRAM_NAME, LOG, IS_SCRIPT, OLD_EXE, ROOT_PATH, OptionKeys, LANG_FOLDER_PATH
+from src.constant_vars import VERSION, PROGRAM_NAME, LOGS_PATH, IS_SCRIPT, OLD_EXE, ROOT_PATH, MAX_LOGS, OptionKeys, LANG_FOLDER_PATH
 import src.errorChecking as errorChecking
 from src.style import StyleManager
 
+def setup_logging() -> None:
+    time: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    logFileName: str = f'log-{time}.txt'
+
+    logging.basicConfig(
+        filename=os.path.join(LOGS_PATH, logFileName),
+        filemode='a',
+        format='%(asctime)s,%(msecs)d %(levelname)s %(message)s',
+        datefmt='%H:%M:%S',
+        level=logging.DEBUG if IS_SCRIPT else logging.INFO
+    )
+
+    # Delete extra log files
+    logs: list[str] = os.listdir(LOGS_PATH)
+    logs_count: int = len(logs)
+
+    if logs_count > MAX_LOGS:
+        for i in range(logs_count - MAX_LOGS + 1):
+            logging.info("Too many logs, deleting %s", logs[i])
+            os.remove(os.path.join(LOGS_PATH, logs[i]))
 
 if __name__ == '__main__':
 
@@ -23,11 +44,7 @@ if __name__ == '__main__':
     if not os.path.exists('logs'):
         os.mkdir('logs')
 
-    logging.basicConfig(filename=os.path.join(ROOT_PATH, 'logs', LOG),
-                        filemode='a',
-                        format='%(asctime)s,%(msecs)d %(levelname)s %(message)s',
-                        datefmt='%H:%M:%S',
-                        level=logging.DEBUG if IS_SCRIPT else logging.INFO)
+    setup_logging()
 
     logging.info('\nSTARTING: %s\nVERSION: %s\nEXE PATH: %s', PROGRAM_NAME, VERSION, ROOT_PATH)
 

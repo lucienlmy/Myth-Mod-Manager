@@ -52,7 +52,7 @@ class ModListWidget(qtw.QTableWidget):
 
         horizontalHeader: qtw.QHeaderView = self.horizontalHeader()
 
-        horizontalHeader.sectionClicked.connect(lambda x: self.sort(x))
+        horizontalHeader.sectionClicked.connect(self.sort)
         horizontalHeader.setHighlightSections(False)
 
         horizontalHeader.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
@@ -73,7 +73,7 @@ class ModListWidget(qtw.QTableWidget):
         self.tagViewer = None
 
         self.applyStaticText()
-    
+
     def applyStaticText(self) -> None:
         self.setHorizontalHeaderLabels((
             qapp.translate("ModListWidget", 'Name'),
@@ -467,7 +467,7 @@ class ModListWidget(qtw.QTableWidget):
 
         self.api = checkModUpdate(assetID, modVersion)
         self.api.upToDate.connect(uptoDate)
-        self.api.updateDetected.connect(lambda x: updateDetected(x))
+        self.api.updateDetected.connect(updateDetected)
 
     def openModDir(self) -> None:
         if not len(self.getSelectedNameItems()) <= 0:

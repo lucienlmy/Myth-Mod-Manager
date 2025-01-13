@@ -45,14 +45,20 @@ class Worker(QObject):
     def onCancel(self) -> None:
         ...
 
+    def rest(self) -> None:
+        '''
+        Emits signals too fast even with signal blockers so we need this until we can find a better way
+        '''
+        self.thread().msleep(1)
+
     def cancelCheck(self) -> None:
         with QMutexLocker(self.mutex):
-            isCanceled: bool = self.cancel
-
-        if isCanceled:
-            logging.info('%s was canceled', self.__class__)
-            self.onCancel()
-            self.doneCanceling.emit()
+            if not self.cancel:
+                return
+        
+        logging.info('%s was canceled', self.__class__)
+        self.onCancel()
+        self.doneCanceling.emit()
 
     def move(self, src: str, dest: str) -> None:
         '''`shutil.move()` with some extra exception handling'''

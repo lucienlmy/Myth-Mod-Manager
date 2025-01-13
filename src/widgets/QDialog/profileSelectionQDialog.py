@@ -25,7 +25,7 @@ class SelectProfile(Dialog):
 
         self.searchBar = qtw.QLineEdit()
         self.searchBar.setPlaceholderText(qapp.translate('SelectProfile', 'Search...'))
-        self.searchBar.textChanged.connect(lambda x: self.search(x))
+        self.searchBar.textChanged.connect(self.search)
 
         profileManager = ProfileManager(profilePath)
 

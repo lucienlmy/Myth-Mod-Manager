@@ -25,8 +25,6 @@ class NewDisabledDir(Worker):
 
         for mod in self.mods_to_move:
 
-            self.cancelCheck()
-
             self.setCurrentProgress.emit(1, qapp.translate('NewDisabledDir', 'Moving') + f' {mod}')
 
             modDestPath: str = os.path.join(self.new_path, mod)
@@ -39,6 +37,9 @@ class NewDisabledDir(Worker):
                 self.mods_to_move.remove(mod)
             else:
                 logging.warning('%s was not found in:\n%s\nIgnoring...', mod, modCurrentPath)
+
+            self.cancelCheck()
+            self.rest()
         
         self.succeeded.emit()
     
@@ -52,3 +53,4 @@ class NewDisabledDir(Worker):
             modCurrentPath: str = os.path.join(self.new_path, mod)
 
             self.move(modCurrentPath, modDestPath)
+            self.rest()

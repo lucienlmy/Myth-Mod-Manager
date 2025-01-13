@@ -25,8 +25,6 @@ class MoveToEnabledModDir(Worker):
 
         for mod in self.mods:
 
-            self.cancelCheck()
-
             self.setCurrentProgress.emit(1, qapp.translate('MoveToEnabledModDir', 'Enabling') + f' {mod}')
 
             modPath: str = os.path.join(disabledModsPath, mod)
@@ -39,7 +37,10 @@ class MoveToEnabledModDir(Worker):
                 self.mods_moved.append((modPath, modDestPath))
             else:
                 logging.warning('%s was not found in:\n%s\nIgnoring...', mod, disabledModsPath)
-        
+
+            self.cancelCheck()
+            self.rest()
+
         self.succeeded.emit()
     
     def onCancel(self) -> None:
@@ -47,3 +48,4 @@ class MoveToEnabledModDir(Worker):
         for modPaths in self.mods_moved:
             self.setCurrentProgress.emit(1, qapp.translate('MoveToEnabledDir', 'Moving') + f' {os.path.basename(modPaths[0])}')
             self.move(modPaths[1], modPaths[0])
+            self.rest()

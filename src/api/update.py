@@ -28,14 +28,15 @@ class Update(QObject):
     setCurrentProgress = Signal(int, str)
     addTotalProgress = Signal(int)
     setTotalProgress = Signal(int)
+    downloadProgressUpdated = Signal(int, int)
     succeeded = Signal()
-    downloading = Signal(int, int)
     error = Signal(str)
 
     cancel = False
 
     def __init__(self) -> None:
         super().__init__()
+        self.downloadUpdateReply: QNetworkReply = None
 
         logging.getLogger(__name__)
     
@@ -59,10 +60,17 @@ class Update(QObject):
 
         reply.finished.connect(self.__handle_assetURL_fetch)
 
+    @Slot(int, int)
+    def __on_download_progress(self, recievedBytes: int, totalBytes: int) -> None:
+        self.downloadProgressUpdated.emit(recievedBytes, totalBytes)
+
     @Slot()
     def __handle_assetURL_fetch(self) -> None:
 
-        self.__replyErrorCheck()
+        if not self.__replyErrorCheck():
+            return
+
+        self.__cancelCheck()
 
         logging.info('Checking assets')
 
@@ -84,7 +92,8 @@ class Update(QObject):
     @Slot()
     def __download_assets(self) -> None:
 
-        self.__replyErrorCheck()
+        if not self.__replyErrorCheck():
+            return
 
         self.__cancelCheck()
 
@@ -106,20 +115,22 @@ class Update(QObject):
 
                 break
         
-        if downloadLink is not None:
+        if downloadLink is None:
+            self.error.emit('The key "browser_download_url" was not found in Github asset data')
+            return
 
-            logging.info('Downloading update at %s', downloadLink)
+        logging.info('Downloading update at %s', downloadLink)
 
-            self.setCurrentProgress.emit(0, 'Downloading update')
+        self.setCurrentProgress.emit(0, 'Downloading update')
 
-            updateReply: QNetworkReply = self.network.get(QNetworkRequest(QUrl(downloadLink)))
-            updateReply.downloadProgress.connect(lambda x, y: self.downloading.emit(x, y))
-            updateReply.finished.connect(self.__install_update)
-    
+        self.downloadUpdateReply: QNetworkReply = self.network.get(QNetworkRequest(QUrl(downloadLink)))
+        self.downloadUpdateReply.downloadProgress.connect(self.__on_download_progress)
+        self.downloadUpdateReply.finished.connect(self.__install_update)
     @Slot()
     def __install_update(self) -> None:
 
-        self.__replyErrorCheck()
+        if not self.__replyErrorCheck():
+            return
 
         self.__cancelCheck()
 
@@ -129,6 +140,7 @@ class Update(QObject):
 
         logging.info('Download complete!\nWriting update to computer to %s', downloadDir)
 
+        self.addTotalProgress.emit(3)
         self.setCurrentProgress.emit(1, 'Writing...')
 
         with open(downloadDir, 'wb') as f:
@@ -169,18 +181,37 @@ class Update(QObject):
         self.deleteLater()
     
     @Slot()
+    def abort(self) -> None:
+        self.cancel = True
+    
+        if self.downloadUpdateReply is not None and self.downloadUpdateReply.isRunning():
+            self.downloadUpdateReply.abort()
+
+    @Slot()
     def __cancelCheck(self) -> None:
+        if not self.cancel:
+            return
 
-        if self.cancel:
-
-            self.doneCanceling.emit()
-            self.deleteLater()
+        self.doneCanceling.emit()
+        self.deleteLater()
+    
     
     @Slot()
-    def __replyErrorCheck(self) -> None:
+    def __replyErrorCheck(self) -> bool:
+        '''
+        Returns a bool based on if theres an error
+        '''
         reply: QNetworkReply = self.sender()
+        error: QNetworkReply.NetworkError = reply.error()
 
-        if reply.error() != QNetworkReply.NetworkError.NoError:
-            logging.error('An error occured updating Myth Mod Manager:\n%s', str(reply.error()))
+        if error == QNetworkReply.NetworkError.OperationCanceledError:
+            self.__cancelCheck()
+            return False
+        
+        if error != QNetworkReply.NetworkError.NoError:
+            logging.error('An error occured updating Myth Mod Manager')
             self.error.emit(str(reply.error()))
             self.deleteLater()
+            return False
+        
+        return True

@@ -3,7 +3,6 @@ import logging
 import PySide6.QtWidgets as qtw
 import PySide6.QtGui as qtg
 from PySide6.QtCore import Qt as qt, QCoreApplication as qapp, Slot
-from PySide6.QtNetwork import QNetworkReply
 
 from semantic_version import Version
 
@@ -35,11 +34,11 @@ class updateDetected(Dialog):
         self.progressBar = qtw.QProgressBar()
         self.progressBar.setAlignment(qt.AlignmentFlag.AlignTop)
 
-        self.autoUpdate.setTotalProgress.connect(lambda x: self.progressBar.setMaximum(x))
-        self.autoUpdate.setCurrentProgress.connect(lambda x, y: self.updateProgressBar(x, y))
-        self.autoUpdate.downloading.connect(lambda x, y: self.downloadStarted(x, y))
-        self.autoUpdate.addTotalProgress.connect(lambda x: self.progressBar.setMaximum(self.progressBar.maximum() + x))
-        self.autoUpdate.error.connect(lambda x: self.errorRaised(x))
+        self.autoUpdate.setTotalProgress.connect(self.onSetTotalProgress)
+        self.autoUpdate.setCurrentProgress.connect(self.updateProgressBar)
+        self.autoUpdate.downloadProgressUpdated.connect(self.onDownloadProgress)
+        self.autoUpdate.addTotalProgress.connect(self.onAddTotalProgress)
+        self.autoUpdate.error.connect(self.errorRaised)
         self.autoUpdate.succeeded.connect(self.succeeded)
         self.autoUpdate.doneCanceling.connect(self.close)
 
@@ -90,6 +89,7 @@ class updateDetected(Dialog):
     
     @Slot(str)
     def errorRaised(self, message: str) -> None:
+        logging.error(message)
         error = Notice(message, headline=qapp.translate('updateDetected', 'Error'))
         error.exec()
 
@@ -111,6 +111,14 @@ class updateDetected(Dialog):
         self.succeededState = True
         self.buttonBox.buttons()[0].setEnabled(True)
     
+    @Slot(int)
+    def onSetTotalProgress(self, newMax: int) -> None:
+        self.progressBar.setMaximum(newMax)
+    
+    @Slot(int)
+    def onAddTotalProgress(self, num: int) -> None:
+        self.progressBar.setMaximum(self.progressBar.maximum() + num)
+
     @Slot()
     def cancel(self) -> None:
         '''
@@ -124,7 +132,7 @@ class updateDetected(Dialog):
         logging.info('Task %s was canceled...')
         self.message.setText(qapp.translate('updateDetected', 'Canceling... (Finishing current step)'))
 
-        self.autoUpdate.cancel = True
+        self.autoUpdate.abort()
     
     @Slot()
     def doNotAskAgain(self) -> None:
@@ -135,37 +143,36 @@ class updateDetected(Dialog):
         self.cancel()
     
     @Slot(int, int)
-    def downloadStarted(self, current: int, total: int) -> None:
+    def onDownloadProgress(self, current: int, total: int) -> None:
 
         if self.autoUpdate.cancel:
-            reply: QNetworkReply = self.autoUpdate.network.sender()
-            reply.abort()
-            self.reject()
+            return
 
+        #logging.info("Bytes Recieved: %s", current)
+
+        # First time being updated
         if not self.downloadState:
-            self.progressBar.setMaximum(self.progressBar.maximum() + total)
+            #logging.info("TOTAL BYTES: %s", total)
+            self.progressBar.setMaximum(total)
             self.downloadState = True
-            
-        self.updateProgressBar(current - self.lastIterBytes)
-
-        self.lastIterBytes: int = current
+        
+        self.progressBar.setValue(current)
         
     @Slot(int)
     @Slot(int, str)
     def updateProgressBar(self, value: int, step: str = '') -> None:
 
-        newValue = value + self.progressBar.value()
-
         if step:
             self.message.setText(step)
-
+    
+        newValue: int = value + self.progressBar.value()
         self.progressBar.setValue(newValue)
 
 # EVENT OVERRIDES 
     def closeEvent(self, arg__1: qtg.QCloseEvent) -> None:
 
         if not self.succeededState:
-            self.setResult(0)
+            self.setResult(qtw.QDialog.DialogCode.Rejected)
             return super().closeEvent(arg__1)
         else:
             self.accept()
@@ -177,6 +184,6 @@ class updateDetected(Dialog):
     
     def accept(self) -> None:
 
-        self.setResult(1)
+        self.setResult(qtw.QDialog.DialogCode.Accepted)
 
         return super().accept()

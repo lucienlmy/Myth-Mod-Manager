@@ -26,7 +26,7 @@ class SelectMod(Dialog):
 
         self.searchBar = qtw.QLineEdit()
         self.searchBar.setPlaceholderText(qapp.translate('SelectMod', 'Search... use "tag:" with no spaces to search for tags, use a comma "," to seperate tags'))
-        self.searchBar.textChanged.connect(lambda x: self.search(x))
+        self.searchBar.textChanged.connect(self.search)
 
         self.saveManager = Save(savePath)
 

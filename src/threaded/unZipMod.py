@@ -32,8 +32,6 @@ class UnZipMod(Worker):
 
                 modType: ModType = modURL[1]
 
-                self.cancelCheck()
-
                 self.setCurrentProgress.emit(1, qapp.translate("UnZipMod", "Unpacking") + f" {mod}")
 
                 logging.info('Unzipping %s to %s', src, modDestDict[modType])
@@ -43,6 +41,9 @@ class UnZipMod(Worker):
 
                 else:
                     logging.warning('%s does not exist', src)
+
+                self.cancelCheck()
+                self.rest()
 
             self.succeeded.emit()
         

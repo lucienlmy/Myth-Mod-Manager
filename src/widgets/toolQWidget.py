@@ -42,8 +42,8 @@ class ExternalToolDisplay(qtw.QListWidget):
             self.addItem(item)
 
             frame = ExternalTool(s)
-            frame.deleted.connect(lambda x: self.deleteItem(x))
-            frame.nameChanged.connect(lambda x, y: self.changeName(x, y))
+            frame.deleted.connect(self.deleteItem)
+            frame.nameChanged.connect(self.changeName)
             item.setSizeHint(QSize(245, 245))
 
             self.setItemWidget(item, frame)

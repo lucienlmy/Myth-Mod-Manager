@@ -28,8 +28,6 @@ class DeleteMod(Worker):
         try: 
             for modName in self.mods:
 
-                self.cancelCheck()
-
                 self.setCurrentProgress.emit(1, qapp.translate('DeleteMod', 'Deleting') + f'{modName}')
 
                 enabled: bool = self.saveManager.getEnabled(modName)
@@ -44,6 +42,9 @@ class DeleteMod(Worker):
                     send2trash.send2trash(path)
                 else:
                     logging.error('An error was raised in FileMover.deleteMod(), %s path does not exist:\n%s', os.path.basename(path), path)
+
+                self.cancelCheck()
+                self.rest()
 
             self.succeeded.emit()
 
