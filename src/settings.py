@@ -179,9 +179,14 @@ class Options(qtw.QWidget):
                 progressWidget.exec()
             else:
                 progressWidget.mode.cancel = True
+                errmsg: str = qapp.translate(
+                    'Options',
+                    'Something went wrong applying new disabled mods folder, check logs for more details after closing this window'
+                )
+
                 Notice(
-                    'Something went wrong applying new disabled mods folder, check logs for more details after closing this window',
-                    'Could not change disabled mods folder'
+                    errmsg,
+                    qapp.translate('Options', 'Could not change disabled mods folder')
                 ).exec()
 
             if not progressWidget.mode.cancel:
@@ -197,7 +202,6 @@ class Options(qtw.QWidget):
                 is_dir,
                 is_abs
             )
-
 
         if self.optionChanged.get(OptionKeys.color_theme):
             theme = LIGHT if self.optionsGeneral.colorThemeLight.isChecked() else DARK
